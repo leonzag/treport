@@ -7,7 +7,7 @@ import (
 	"github.com/leonzag/treport/internal/application/config"
 	appInterface "github.com/leonzag/treport/internal/application/interfaces"
 	appService "github.com/leonzag/treport/internal/application/service"
-	tokenRepo "github.com/leonzag/treport/internal/infrastructure/repo/token/sqlite"
+	tokenRepo "github.com/leonzag/treport/internal/infrastructure/repo/token"
 	"github.com/leonzag/treport/internal/infrastructure/service/tinvest"
 	guiApp "github.com/leonzag/treport/internal/presentation/gui/app"
 	guiInterface "github.com/leonzag/treport/internal/presentation/gui/interfaces"
@@ -99,7 +99,8 @@ func (a *appGuiDeps) TokenRepo() (appInterface.TokenRepo, error) {
 	if err != nil {
 		return nil, err
 	}
-	repo := tokenRepo.NewTokenRepo(db)
+
+	repo := tokenRepo.NewTokenSQliteRepo(db)
 	if !repo.IsInited() {
 		if err := repo.Init(a.Ctx()); err != nil {
 			return nil, err
