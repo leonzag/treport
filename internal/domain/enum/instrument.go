@@ -87,7 +87,7 @@ const (
 	InstrumentType_COMMODITY            // Товар.
 )
 
-func (t InstrumentType) String() string {
+func (t InstrumentType) StringRU() string {
 	return [...]string{
 		"Тип инструмента не определён",
 		"Облигация",
@@ -101,4 +101,40 @@ func (t InstrumentType) String() string {
 		"Индекс",
 		"Товар",
 	}[t-1]
+}
+
+func (t InstrumentType) String() string {
+	return [...]string{
+		"unspecified",
+		"bond",
+		"share",
+		"currency",
+		"etf",
+		"futures",
+		"sp",
+		"option",
+		"clearing_certificate",
+		"index",
+		"commodity",
+	}[t-1]
+}
+
+func InstrumentTypeFromString(s string) InstrumentType {
+	it, ok := map[string]InstrumentType{
+		"unspecified":          InstrumentType_UNSPECIFIED,
+		"bond":                 InstrumentType_BOND,
+		"share":                InstrumentType_SHARE,
+		"currency":             InstrumentType_CURRENCY,
+		"etf":                  InstrumentType_ETF,
+		"futures":              InstrumentType_FUTURES,
+		"sp":                   InstrumentType_SP,
+		"option":               InstrumentType_OPTION,
+		"clearing_certificate": InstrumentType_CLEARING_CERTIFICATE,
+		"index":                InstrumentType_INDEX,
+		"commodity":            InstrumentType_COMMODITY,
+	}[s]
+	if !ok {
+		return InstrumentType_UNSPECIFIED
+	}
+	return it
 }
