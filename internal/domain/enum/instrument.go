@@ -31,23 +31,23 @@ const (
 
 func (s SecurityTradingStatus) String() string {
 	return [...]string{
-		"SECURITY_TRADING_STATUS_UNSPECIFIED",
-		"SECURITY_TRADING_STATUS_NOT_AVAILABLE_FOR_TRADING",
-		"SECURITY_TRADING_STATUS_OPENING_PERIOD",
-		"SECURITY_TRADING_STATUS_CLOSING_PERIOD",
-		"SECURITY_TRADING_STATUS_BREAK_IN_TRADING",
-		"SECURITY_TRADING_STATUS_NORMAL_TRADING",
-		"SECURITY_TRADING_STATUS_CLOSING_AUCTION",
-		"SECURITY_TRADING_STATUS_DARK_POOL_AUCTION",
-		"SECURITY_TRADING_STATUS_DISCRETE_AUCTION",
-		"SECURITY_TRADING_STATUS_OPENING_AUCTION_PERIOD",
-		"SECURITY_TRADING_STATUS_TRADING_AT_CLOSING_AUCTION_PRICE",
-		"SECURITY_TRADING_STATUS_SESSION_ASSIGNED",
-		"SECURITY_TRADING_STATUS_SESSION_CLOSE",
-		"SECURITY_TRADING_STATUS_SESSION_OPEN",
-		"SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING",
-		"SECURITY_TRADING_STATUS_DEALER_BREAK_IN_TRADING",
-		"SECURITY_TRADING_STATUS_DEALER_NOT_AVAILABLE_FOR_TRADING",
+		"Торговый статус не определён",
+		"Недоступен для торгов",
+		"Период открытия торгов",
+		"Период закрытия торгов",
+		"Перерыв в торговле",
+		"Нормальная торговля",
+		"Аукцион закрытия",
+		"Аукцион крупных пакетов",
+		"Дискретный аукцион",
+		"Аукцион открытия",
+		"Период торгов по цене аукциона закрытия",
+		"Сессия назначена",
+		"Сессия закрыта",
+		"Сессия открыта",
+		"Доступна торговля в режиме внутренней ликвидности брокера",
+		"Перерыв торговли в режиме внутренней ликвидности брокера",
+		"Недоступна торговля в режиме внутренней ликвидности брокера",
 	}[s-1]
 }
 
@@ -63,11 +63,11 @@ const (
 
 func (e RealExchange) String() string {
 	return [...]string{
-		"REAL_EXCHANGE_UNSPECIFIED",
-		"REAL_EXCHANGE_MOEX",
-		"REAL_EXCHANGE_RTS",
-		"REAL_EXCHANGE_OTC",
-		"REAL_EXCHANGE_DEALER",
+		"Тип не определён",
+		"Московская биржа",
+		"Санкт-Петербургская биржа",
+		"Внебиржевой инструмент",
+		"Инструмент, торгуемый на площадке брокера",
 	}[e-1]
 }
 
@@ -89,16 +89,16 @@ const (
 
 func (t InstrumentType) String() string {
 	return [...]string{
-		"INSTRUMENT_TYPE_UNSPECIFIED",
-		"INSTRUMENT_TYPE_BOND",
-		"INSTRUMENT_TYPE_SHARE",
-		"INSTRUMENT_TYPE_CURRENCY",
-		"INSTRUMENT_TYPE_ETF",
-		"INSTRUMENT_TYPE_FUTURES",
-		"INSTRUMENT_TYPE_SP",
-		"INSTRUMENT_TYPE_OPTION",
-		"INSTRUMENT_TYPE_CLEARING_CERTIFICATE",
-		"INSTRUMENT_TYPE_INDEX",
-		"INSTRUMENT_TYPE_COMMODITY",
+		"Тип инструмента не определён",
+		"Облигация",
+		"Акция",
+		"Валюта",
+		"ETF",
+		"Фьючерс",
+		"Структурная нота",
+		"Опцион",
+		"Clearing certificate",
+		"Индекс",
+		"Товар",
 	}[t-1]
 }

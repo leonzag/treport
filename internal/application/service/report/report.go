@@ -135,7 +135,8 @@ func (s *PortfolioReportCtl) appendInstrumentPosition(
 	ticker := ""
 	instrType := pos.InstrumentType
 	if instr != nil {
-		name, ticker, instrType = instr.Name, instr.Ticker, instr.InstrumentType
+		name, ticker = instr.Name, instr.Ticker
+		instrType = instr.InstrumentKind.String()
 	}
 	content := []interface{}{
 		name,
