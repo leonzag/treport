@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/leonzag/treport/internal/application/dto"
 	"github.com/leonzag/treport/internal/domain/entity"
+	"github.com/leonzag/treport/internal/domain/enum"
 	"github.com/leonzag/treport/internal/presentation/gui/interfaces"
 )
 
@@ -186,6 +187,21 @@ func (p *createReportForm) createReport(dest string, token string) (string, erro
 	case err := <-errCh:
 		return "", err
 	case summary := <-summaryCh:
+		for _, s := range summary {
+			s.Portfolio.SortPositionsByTypes(
+				enum.InstrumentType_SHARE,
+				enum.InstrumentType_BOND,
+				enum.InstrumentType_FUTURES,
+				enum.InstrumentType_OPTION,
+				enum.InstrumentType_ETF,
+				enum.InstrumentType_INDEX,
+				enum.InstrumentType_SP,
+				enum.InstrumentType_CURRENCY,
+				enum.InstrumentType_CLEARING_CERTIFICATE,
+				enum.InstrumentType_COMMODITY,
+				enum.InstrumentType_UNSPECIFIED,
+			)
+		}
 		return reportSrv.CreateXLSX(dest, summary)
 	}
 }
