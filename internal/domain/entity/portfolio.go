@@ -3,6 +3,7 @@ package entity
 import (
 	"time"
 
+	"github.com/leonzag/treport/internal/domain/enum"
 	"github.com/leonzag/treport/internal/domain/value"
 )
 
@@ -20,6 +21,29 @@ type Portfolio struct {
 	AccountId        string
 	Positions        []*PortfolioPosition
 	VirtualPositions []*VirtualPortfolioPosition
+}
+
+func (p *Portfolio) SortPositionsByType(t enum.InstrumentType) {
+	sorted := make([]*PortfolioPosition, 0, len(p.Positions))
+	unsorted := []*PortfolioPosition{}
+	for _, pos := range p.Positions {
+		instrType := enum.InstrumentTypeFromString(pos.InstrumentType)
+		if instrType == t {
+			sorted = append(sorted, pos)
+		} else {
+			unsorted = append(unsorted, pos)
+		}
+	}
+	for _, pos := range unsorted {
+		sorted = append(sorted, pos)
+	}
+	p.Positions = sorted
+}
+
+func (p *Portfolio) SortPositionsByTypes(types ...enum.InstrumentType) {
+	for i := 0; i < len(types); i++ {
+		p.SortPositionsByType(types[len(types)-i-1])
+	}
 }
 
 type PortfolioPosition struct {

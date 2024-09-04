@@ -8,11 +8,9 @@ import (
 type PortfolioSummary struct {
 	createdAt time.Time
 
-	Account                   *Account
-	Instruments               []*Instrument
-	Portfolio                 *Portfolio
-	PortfolioPositions        []*PortfolioPosition
-	PortfolioPositionsVirtual []*VirtualPortfolioPosition
+	Account     *Account
+	Instruments []*Instrument
+	Portfolio   *Portfolio
 }
 
 func NewPortfolioSummary(
@@ -26,11 +24,9 @@ func NewPortfolioSummary(
 	return &PortfolioSummary{
 		createdAt: time.Now(),
 
-		Account:                   account,
-		Instruments:               instruments,
-		Portfolio:                 portfolio,
-		PortfolioPositions:        portfolio.Positions,
-		PortfolioPositionsVirtual: portfolio.VirtualPositions,
+		Account:     account,
+		Instruments: instruments,
+		Portfolio:   portfolio,
 	}
 }
 
