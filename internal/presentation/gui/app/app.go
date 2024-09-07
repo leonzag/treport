@@ -61,10 +61,7 @@ func newMainWindow(a fyne.App, onClosed func()) fyne.Window {
 	w := a.NewWindow(gui.AppTitle)
 	w.SetMaster()
 	w.SetOnClosed(onClosed)
-	w.Resize(fyne.Size{
-		Width:  gui.WinWidth,
-		Height: gui.WinHeight,
-	})
+	w.Resize(gui.WinSize())
 	w.SetFixedSize(gui.WinFixedSize)
 
 	return w

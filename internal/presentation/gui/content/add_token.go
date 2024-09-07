@@ -55,7 +55,7 @@ func NewAddToken(parentApp interfaces.App) *addTokenContent {
 		Importance: widget.LowImportance,
 		Alignment:  widget.ButtonAlignTrailing,
 		OnTapped: func() {
-			parentApp.OpenURL(&gui.GetTokenURL)
+			parentApp.OpenURL(gui.GetTokenURL())
 		},
 	}
 

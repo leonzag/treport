@@ -1,8 +1,6 @@
 package content
 
 import (
-	"net/url"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -41,17 +39,14 @@ func NewAbout(parentApp interfaces.App) *about {
 
 	mail := widget.NewButtonWithIcon(gui.ContactMail, theme.ContentCopyIcon(), func() {
 		copyToClipboard(gui.ContactMail)
-		parentApp.OpenURL(&url.URL{
-			Scheme: "mailto",
-			Host:   gui.ContactMail,
-		})
+		parentApp.OpenURL(gui.ContactMailURL())
 	})
 	mail.Importance = widget.LowImportance
 	mail.Alignment = widget.ButtonAlignLeading
 
 	repo := widget.NewButtonWithIcon("Открыть в браузере", theme.SearchIcon(), func() {
-		copyToClipboard(gui.ContactRepoURL.String())
-		parentApp.OpenURL(&gui.ContactRepoURL)
+		copyToClipboard(gui.ContactRepoURL().String())
+		parentApp.OpenURL(gui.ContactRepoURL())
 	})
 	repo.Importance = widget.LowImportance
 	repo.Alignment = widget.ButtonAlignLeading
