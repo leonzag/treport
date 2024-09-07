@@ -17,3 +17,9 @@ var ContactRepoURL = url.URL{
 	Host:   "www.github.com",
 	Path:   "leonzag/treport",
 }
+
+var GetTokenURL = url.URL{
+	Scheme: "https",
+	Host:   "www.tbank.ru",
+	Path:   "/invest/settings/api/",
+}

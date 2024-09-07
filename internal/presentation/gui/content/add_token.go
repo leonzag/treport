@@ -1,13 +1,12 @@
 package content
 
 import (
-	"net/url"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/leonzag/treport/internal/application/dto"
+	"github.com/leonzag/treport/internal/presentation/gui"
 	"github.com/leonzag/treport/internal/presentation/gui/interfaces"
 	"github.com/leonzag/treport/internal/presentation/gui/validator"
 )
@@ -50,17 +49,17 @@ func NewAddToken(parentApp interfaces.App) *addTokenContent {
 
 	encryptionFields := container.NewBorder(nil, nil, c.encryptionCheck, nil, c.encryptionPassword)
 
-	getFromTinvestBtn := widget.NewButtonWithIcon("Получить", theme.DownloadIcon(), func() {
-		parentApp.OpenURL(&url.URL{
-			Scheme: "https",
-			Host:   "www.tbank.ru",
-			Path:   "/invest/settings/api/",
-		})
-	})
-	getFromTinvestBtn.Alignment = widget.ButtonAlignTrailing
-	getFromTinvestBtn.Importance = widget.LowImportance
+	getNewTokenBtn := &widget.Button{
+		Text:       "Получить",
+		Icon:       theme.DownloadIcon(),
+		Importance: widget.LowImportance,
+		Alignment:  widget.ButtonAlignTrailing,
+		OnTapped: func() {
+			parentApp.OpenURL(&gui.GetTokenURL)
+		},
+	}
 
-	tokenEntryFields := container.NewBorder(nil, nil, nil, getFromTinvestBtn, c.tokenEntry)
+	tokenEntryFields := container.NewBorder(nil, nil, nil, getNewTokenBtn, c.tokenEntry)
 
 	c.selectExistingBtn = widget.NewButtonWithIcon(
 		"Выбрать существующий",
