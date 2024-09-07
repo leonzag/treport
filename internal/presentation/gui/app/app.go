@@ -8,6 +8,8 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
 	"github.com/leonzag/treport/internal/presentation/gui"
 	"github.com/leonzag/treport/internal/presentation/gui/component"
 	"github.com/leonzag/treport/internal/presentation/gui/content"
@@ -34,93 +36,108 @@ type application struct {
 }
 
 func NewApp(ctx context.Context, l logger.Logger, services guiInterfaces.AppServices) *application {
-	fyneApp := app.NewWithID(gui.AppID)
-
-	mainWindow := fyneApp.NewWindow(gui.AppTitle)
-	mainWindow.SetMaster()
+	a := app.NewWithID(gui.AppID)
 
 	ctx, cancel := context.WithCancel(ctx)
-
-	mainWindow.SetOnClosed(func() {
-		l.Infof("Closing process..")
+	mw := newMainWindow(a, func() {
+		l.Infof("Quit...")
 		cancel()
-		mainWindow.Close()
-		fyneApp.Quit()
+		a.Quit()
 	})
-
-	mainWindow.Resize(fyne.Size{
-		Width:  gui.WinWidth,
-		Height: gui.WinHeight,
-	})
-	mainWindow.SetFixedSize(gui.WinFixedSize)
 
 	guiApp := &application{
-		fyneApp:    fyneApp,
-		mainWindow: mainWindow,
+		fyneApp:    a,
+		mainWindow: mw,
 		logger:     l,
-		services:   services,
 		ctx:        ctx,
+		services:   services,
 	}
-	guiApp.addTokenPage = content.NewAddTokenPage(guiApp)
-	guiApp.creationPage = content.NewCreationPage(guiApp)
-
-	guiApp.progressBarInfinite = component.NewProgressBarInfinite()
 	guiApp.setMainMenu()
 
 	return guiApp
 }
 
+func newMainWindow(a fyne.App, onClosed func()) fyne.Window {
+	w := a.NewWindow(gui.AppTitle)
+	w.SetMaster()
+	w.SetOnClosed(onClosed)
+	w.Resize(fyne.Size{
+		Width:  gui.WinWidth,
+		Height: gui.WinHeight,
+	})
+	w.SetFixedSize(gui.WinFixedSize)
+
+	return w
+}
+
 func (a *application) ShowAndRun() error {
 	var err error
 	if err = a.Refresh(); err != nil {
-		dlg := dialog.NewError(err, a.mainWindow)
-		dlg.SetOnClosed(a.mainWindow.Close)
-		dlg.Show()
+		a.showFatal(err)
 	}
-	a.mainWindow.ShowAndRun()
+	a.MainWindow().ShowAndRun()
 	return err
 }
 
 func (a *application) Refresh() error {
-	showWindow := a.ShowCreateReport
 	tokens, err := a.services.Token().ListTokens(a.ctx)
 	if err != nil {
+		a.Logger().Errorf("error on list tokens at sturtup: %s", err.Error())
 		return err
 	}
+
+	show := a.ShowCreateReport
 	if len(tokens) == 0 {
-		showWindow = a.ShowAddToken
+		show = a.ShowAddToken
 	}
-	if err := a.addTokenPage.Refresh(); err != nil {
+
+	if err := a.AddTokenForm().Refresh(); err != nil {
 		return err
 	}
-	if err := a.creationPage.Refresh(); err != nil {
+	if err := a.CreateReportForm().Refresh(); err != nil {
 		return err
 	}
-	showWindow()
+	show()
 
 	return nil
 }
 
 func (a *application) ShowAddToken() {
-	a.addTokenPage.Refresh()
-	content := container.NewVBox(
-		a.progressBarInfinite.Content(),
-		a.addTokenPage.Content(),
-	)
-	a.mainWindow.SetContent(content)
+	a.AddTokenForm().Refresh()
+	a.MainWindow().SetContent(container.NewVBox(
+		a.ProgressBarInfinite().Content(),
+		a.AddTokenForm().Content(),
+	))
 }
 
 func (a *application) ShowCreateReport() {
-	a.creationPage.Refresh()
-	content := container.NewVBox(
-		a.progressBarInfinite.Content(),
-		a.creationPage.Content(),
-	)
-	a.mainWindow.SetContent(content)
+	a.CreateReportForm().Refresh()
+	a.MainWindow().SetContent(container.NewVBox(
+		a.ProgressBarInfinite().Content(),
+		a.CreateReportForm().Content(),
+	))
 }
 
 func (a *application) ShowError(err error) {
 	dialog.ShowError(err, a.mainWindow)
+}
+
+func (a *application) showFatal(err error) {
+	w := a.MainWindow()
+	w.SetTitle("Критическая Ошибка")
+	w.SetIcon(theme.ErrorIcon())
+	w.SetContent(container.NewBorder(
+		widget.NewLabel(err.Error()),
+		&widget.Button{
+			Text:       "Выход",
+			Icon:       theme.CancelIcon(),
+			Importance: widget.DangerImportance,
+			OnTapped:   w.Close,
+		},
+		nil,
+		nil,
+	))
+	w.Show()
 }
 
 func (a *application) ShowInfo(title, msg string) {
@@ -148,10 +165,18 @@ func (a *application) ShowPasswordEnter(title string, onSubmit func(pwd string))
 }
 
 func (a *application) AddTokenForm() guiInterfaces.Content {
+	if a.addTokenPage == nil {
+		a.addTokenPage = content.NewAddTokenPage(a)
+	}
+
 	return a.addTokenPage
 }
 
 func (a *application) CreateReportForm() guiInterfaces.Content {
+	if a.creationPage == nil {
+		a.creationPage = content.NewCreationPage(a)
+	}
+
 	return a.creationPage
 }
 
@@ -176,21 +201,26 @@ func (a *application) Ctx() context.Context {
 }
 
 func (a *application) ProgressBarInfinite() guiInterfaces.ProgressBarInfinite {
+	if a.progressBarInfinite == nil {
+		a.progressBarInfinite = component.NewProgressBarInfinite()
+	}
+
 	return a.progressBarInfinite
 }
 
 func (a *application) setMainMenu() {
-	quitItem := fyne.NewMenuItem("Выход", a.mainWindow.Close)
-	quitItem.IsQuit = true
-
-	aboutItem := fyne.NewMenuItem("О программе", a.showAbout)
-
 	mainMenu := fyne.NewMainMenu(
-		fyne.NewMenu("Файл", quitItem),
-		fyne.NewMenu("Справка", aboutItem),
+		fyne.NewMenu("Файл", &fyne.MenuItem{
+			Label:  "Выход",
+			IsQuit: true,
+			Action: a.MainWindow().Close,
+		}),
+		fyne.NewMenu("Справка", &fyne.MenuItem{
+			Label:  "О прорамме",
+			Action: a.showAbout,
+		}),
 	)
-
-	a.mainWindow.SetMainMenu(mainMenu)
+	a.MainWindow().SetMainMenu(mainMenu)
 }
 
 func (a *application) showAbout() {
