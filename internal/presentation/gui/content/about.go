@@ -1,6 +1,7 @@
 package content
 
 import (
+	"fmt"
 	"net/url"
 
 	"fyne.io/fyne/v2"
@@ -8,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/leonzag/treport/internal/application/config"
 	"github.com/leonzag/treport/internal/presentation/gui"
 	"github.com/leonzag/treport/internal/presentation/gui/interfaces"
 )
@@ -42,6 +44,11 @@ func NewAbout(parentApp interfaces.App) *about {
 
 			container.NewTabItem("О программе", container.NewVBox(
 				widget.NewRichTextFromMarkdown(desc),
+				widget.NewRichTextFromMarkdown(fmt.Sprintf(
+					"## Версия \n%s-**%s**",
+					config.AppName,
+					gui.Version,
+				)),
 				widget.NewRichTextFromMarkdown(license),
 			)),
 
