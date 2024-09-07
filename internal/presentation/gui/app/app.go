@@ -27,13 +27,27 @@ type application struct {
 
 	addTokenPage        guiInterfaces.Content
 	creationPage        guiInterfaces.Content
+	aboutPage           guiInterfaces.Content
 	progressBarInfinite guiInterfaces.ProgressBarInfinite
+
+	aboutWindow fyne.Window
 }
 
 func NewApp(ctx context.Context, l logger.Logger, services guiInterfaces.AppServices) *application {
 	fyneApp := app.NewWithID(gui.AppID)
 
 	mainWindow := fyneApp.NewWindow(gui.AppTitle)
+	mainWindow.SetMaster()
+
+	ctx, cancel := context.WithCancel(ctx)
+
+	mainWindow.SetOnClosed(func() {
+		l.Infof("Closing process..")
+		cancel()
+		mainWindow.Close()
+		fyneApp.Quit()
+	})
+
 	mainWindow.Resize(fyne.Size{
 		Width:  gui.WinWidth,
 		Height: gui.WinHeight,
@@ -51,6 +65,7 @@ func NewApp(ctx context.Context, l logger.Logger, services guiInterfaces.AppServ
 	guiApp.creationPage = content.NewCreationPage(guiApp)
 
 	guiApp.progressBarInfinite = component.NewProgressBarInfinite()
+	guiApp.setMainMenu()
 
 	return guiApp
 }
@@ -162,4 +177,42 @@ func (a *application) Ctx() context.Context {
 
 func (a *application) ProgressBarInfinite() guiInterfaces.ProgressBarInfinite {
 	return a.progressBarInfinite
+}
+
+func (a *application) setMainMenu() {
+	quitItem := fyne.NewMenuItem("Выход", a.mainWindow.Close)
+	quitItem.IsQuit = true
+
+	aboutItem := fyne.NewMenuItem("О программе", a.showAbout)
+
+	mainMenu := fyne.NewMainMenu(
+		fyne.NewMenu("Файл", quitItem),
+		fyne.NewMenu("Справка", aboutItem),
+	)
+
+	a.mainWindow.SetMainMenu(mainMenu)
+}
+
+func (a *application) showAbout() {
+	if a.aboutWindow == nil {
+		a.createAbout()
+	}
+	a.aboutPage.Refresh()
+	a.aboutWindow.CenterOnScreen()
+	a.aboutWindow.Show()
+}
+
+func (a *application) createAbout() {
+	about := a.fyneApp.NewWindow("О программе")
+	if a.aboutPage == nil {
+		a.aboutPage = content.NewAbout(a)
+	}
+	about.SetContent(a.aboutPage.Content())
+	about.SetFixedSize(true)
+	about.SetOnClosed(func() {
+		a.mainWindow.Show()
+		about.Close()
+		a.aboutWindow = nil
+	})
+	a.aboutWindow = about
 }
