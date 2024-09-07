@@ -12,9 +12,9 @@ import (
 	"github.com/leonzag/treport/internal/presentation/gui/validator"
 )
 
-var _ interfaces.Content = new(addTokenForm)
+var _ interfaces.Content = new(addTokenContent)
 
-type addTokenForm struct {
+type addTokenContent struct {
 	titleEntry         *widget.Entry
 	tokenEntry         *widget.Entry
 	encryptionCheck    *widget.Check
@@ -25,30 +25,30 @@ type addTokenForm struct {
 	app  interfaces.App
 }
 
-func NewAddTokenPage(parentApp interfaces.App) *addTokenForm {
-	p := &addTokenForm{app: parentApp}
+func NewAddToken(parentApp interfaces.App) *addTokenContent {
+	c := &addTokenContent{app: parentApp}
 
-	p.titleEntry = widget.NewEntry()
-	p.titleEntry.Validator = validator.RequiredField
+	c.titleEntry = widget.NewEntry()
+	c.titleEntry.Validator = validator.RequiredField
 
-	p.tokenEntry = widget.NewEntry()
-	p.tokenEntry.Validator = validator.RequiredField
-	p.tokenEntry.SetPlaceHolder("вставьте ваш InvestAPI токен")
+	c.tokenEntry = widget.NewEntry()
+	c.tokenEntry.Validator = validator.RequiredField
+	c.tokenEntry.SetPlaceHolder("вставьте ваш InvestAPI токен")
 
-	p.encryptionPassword = widget.NewPasswordEntry()
-	p.encryptionPassword.SetPlaceHolder("введите пароль")
-	p.encryptionPassword.Disable()
-	p.encryptionCheck = widget.NewCheck("", func(checked bool) {
+	c.encryptionPassword = widget.NewPasswordEntry()
+	c.encryptionPassword.SetPlaceHolder("введите пароль")
+	c.encryptionPassword.Disable()
+	c.encryptionCheck = widget.NewCheck("", func(checked bool) {
 		switch {
 		case checked:
-			p.encryptionPassword.Enable()
+			c.encryptionPassword.Enable()
 		case !checked:
-			p.encryptionPassword.SetText("")
-			p.encryptionPassword.Disable()
+			c.encryptionPassword.SetText("")
+			c.encryptionPassword.Disable()
 		}
 	})
 
-	encryptionFields := container.NewBorder(nil, nil, p.encryptionCheck, nil, p.encryptionPassword)
+	encryptionFields := container.NewBorder(nil, nil, c.encryptionCheck, nil, c.encryptionPassword)
 
 	getFromTinvestBtn := widget.NewButtonWithIcon("Получить", theme.DownloadIcon(), func() {
 		parentApp.OpenURL(&url.URL{
@@ -60,79 +60,79 @@ func NewAddTokenPage(parentApp interfaces.App) *addTokenForm {
 	getFromTinvestBtn.Alignment = widget.ButtonAlignTrailing
 	getFromTinvestBtn.Importance = widget.LowImportance
 
-	tokenEntryFields := container.NewBorder(nil, nil, nil, getFromTinvestBtn, p.tokenEntry)
+	tokenEntryFields := container.NewBorder(nil, nil, nil, getFromTinvestBtn, c.tokenEntry)
 
-	p.selectExistingBtn = widget.NewButtonWithIcon(
+	c.selectExistingBtn = widget.NewButtonWithIcon(
 		"Выбрать существующий",
 		theme.SearchIcon(),
-		p.selectExistingClick,
+		c.selectExistingClick,
 	)
-	p.selectExistingBtn.Importance = widget.LowImportance
+	c.selectExistingBtn.Importance = widget.LowImportance
 
-	p.form = &widget.Form{
+	c.form = &widget.Form{
 		Items: []*widget.FormItem{
 			{Widget: widget.NewRichTextFromMarkdown("# Добавить токен")},
-			{Text: "Название", Widget: p.titleEntry},
+			{Text: "Название", Widget: c.titleEntry},
 			{Text: "Токен", Widget: tokenEntryFields},
 			{Text: "Шифрование", Widget: encryptionFields},
-			{Widget: container.NewBorder(p.selectExistingBtn, nil, nil, nil)},
+			{Widget: container.NewBorder(c.selectExistingBtn, nil, nil, nil)},
 		},
 		SubmitText: "Создать",
-		OnSubmit:   p.addTokenClick,
+		OnSubmit:   c.addTokenClick,
 	}
 
-	return p
+	return c
 }
 
-func (p *addTokenForm) selectExistingClick() {
-	p.app.ShowCreateReport()
+func (c *addTokenContent) selectExistingClick() {
+	c.app.ShowCreateReport()
 }
 
-func (p *addTokenForm) addTokenClick() {
+func (c *addTokenContent) addTokenClick() {
 	tokenDTO := dto.NewTokenDTO(
-		p.titleEntry.Text,
+		c.titleEntry.Text,
 		"",
-		p.encryptionPassword.Text,
-		p.tokenEntry.Text,
+		c.encryptionPassword.Text,
+		c.tokenEntry.Text,
 	)
-	err := p.app.Services().Token().AddToken(p.app.Ctx(), tokenDTO)
+	err := c.app.Services().Token().AddToken(c.app.Ctx(), tokenDTO)
 	if err != nil {
-		p.app.ShowError(err)
-	} else if err := p.app.Refresh(); err != nil {
-		p.app.ShowError(err)
+		c.app.ShowError(err)
+	} else if err := c.app.Refresh(); err != nil {
+		c.app.ShowError(err)
 	} else {
-		p.app.ShowCreateReport()
+		c.app.ShowCreateReport()
 	}
 }
 
-func (p *addTokenForm) Content() fyne.CanvasObject {
-	return p.form
+func (c *addTokenContent) Content() fyne.CanvasObject {
+	return c.form
 }
 
-func (p *addTokenForm) Refresh() error {
-	service, ctx := p.app.Services(), p.app.Ctx()
+func (c *addTokenContent) Refresh() error {
+	service, ctx := c.app.Services(), c.app.Ctx()
 	tokens, err := service.Token().ListTokensTitles(ctx)
 	if err == nil && len(tokens) > 0 {
-		p.selectExistingBtn.Show()
+		c.selectExistingBtn.Show()
 	} else {
-		p.selectExistingBtn.Hide()
+		c.selectExistingBtn.Hide()
 	}
-	p.clear()
-	p.form.Refresh()
+	c.clear()
+	c.form.Refresh()
 
 	return nil
 }
 
-func (p *addTokenForm) clear() {
-	p.titleEntry.SetText("")
-	p.titleEntry.Refresh()
+func (c *addTokenContent) clear() {
+	c.titleEntry.SetText("")
+	c.titleEntry.Refresh()
 
-	p.tokenEntry.SetText("")
-	p.tokenEntry.Refresh()
+	c.tokenEntry.SetText("")
+	c.tokenEntry.Refresh()
 
-	p.encryptionPassword.SetText("")
-	p.encryptionPassword.Refresh()
+	c.encryptionPassword.SetText("")
+	c.encryptionPassword.Refresh()
 
-	p.encryptionCheck.SetChecked(false)
-	p.encryptionCheck.Refresh()
+	c.encryptionCheck.SetChecked(false)
+	c.encryptionCheck.Refresh()
 }

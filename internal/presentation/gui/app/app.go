@@ -27,9 +27,9 @@ type application struct {
 	services   guiInterfaces.AppServices
 	ctx        context.Context
 
-	addTokenPage        guiInterfaces.Content
-	creationPage        guiInterfaces.Content
-	aboutPage           guiInterfaces.Content
+	addToken            guiInterfaces.Content
+	creation            guiInterfaces.Content
+	about               guiInterfaces.Content
 	progressBarInfinite guiInterfaces.ProgressBarInfinite
 
 	aboutWindow fyne.Window
@@ -91,10 +91,10 @@ func (a *application) Refresh() error {
 		show = a.ShowAddToken
 	}
 
-	if err := a.AddTokenForm().Refresh(); err != nil {
+	if err := a.AddToken().Refresh(); err != nil {
 		return err
 	}
-	if err := a.CreateReportForm().Refresh(); err != nil {
+	if err := a.CreateReport().Refresh(); err != nil {
 		return err
 	}
 	show()
@@ -103,18 +103,18 @@ func (a *application) Refresh() error {
 }
 
 func (a *application) ShowAddToken() {
-	a.AddTokenForm().Refresh()
+	a.AddToken().Refresh()
 	a.MainWindow().SetContent(container.NewVBox(
 		a.ProgressBarInfinite().Content(),
-		a.AddTokenForm().Content(),
+		a.AddToken().Content(),
 	))
 }
 
 func (a *application) ShowCreateReport() {
-	a.CreateReportForm().Refresh()
+	a.CreateReport().Refresh()
 	a.MainWindow().SetContent(container.NewVBox(
 		a.ProgressBarInfinite().Content(),
-		a.CreateReportForm().Content(),
+		a.CreateReport().Content(),
 	))
 }
 
@@ -164,20 +164,20 @@ func (a *application) ShowPasswordEnter(title string, onSubmit func(pwd string))
 	component.ShowPasswordDialog(a.mainWindow, title, onSubmit)
 }
 
-func (a *application) AddTokenForm() guiInterfaces.Content {
-	if a.addTokenPage == nil {
-		a.addTokenPage = content.NewAddTokenPage(a)
+func (a *application) AddToken() guiInterfaces.Content {
+	if a.addToken == nil {
+		a.addToken = content.NewAddToken(a)
 	}
 
-	return a.addTokenPage
+	return a.addToken
 }
 
-func (a *application) CreateReportForm() guiInterfaces.Content {
-	if a.creationPage == nil {
-		a.creationPage = content.NewCreationPage(a)
+func (a *application) CreateReport() guiInterfaces.Content {
+	if a.creation == nil {
+		a.creation = content.NewCreateReport(a)
 	}
 
-	return a.creationPage
+	return a.creation
 }
 
 func (a *application) MainWindow() fyne.Window {
@@ -227,17 +227,17 @@ func (a *application) showAbout() {
 	if a.aboutWindow == nil {
 		a.createAbout()
 	}
-	a.aboutPage.Refresh()
+	a.about.Refresh()
 	a.aboutWindow.CenterOnScreen()
 	a.aboutWindow.Show()
 }
 
 func (a *application) createAbout() {
 	about := a.fyneApp.NewWindow("О программе")
-	if a.aboutPage == nil {
-		a.aboutPage = content.NewAbout(a)
+	if a.about == nil {
+		a.about = content.NewAbout(a)
 	}
-	about.SetContent(a.aboutPage.Content())
+	about.SetContent(a.about.Content())
 	about.SetFixedSize(true)
 	about.SetOnClosed(func() {
 		a.mainWindow.Show()

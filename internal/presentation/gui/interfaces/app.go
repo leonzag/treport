@@ -23,10 +23,10 @@ type App interface {
 	ProgressBarInfinite() ProgressBarInfinite
 	Refresh() error
 
-	AddTokenForm() Content
+	AddToken() Content
 	ShowAddToken()
 
-	CreateReportForm() Content
+	CreateReport() Content
 	ShowCreateReport()
 
 	OpenURL(*url.URL)

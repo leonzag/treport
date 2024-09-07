@@ -16,25 +16,25 @@ import (
 	"github.com/leonzag/treport/internal/presentation/gui/interfaces"
 )
 
-var _ interfaces.Content = new(createReportForm)
+var _ interfaces.Content = new(createReportContent)
 
-type createReportForm struct {
+type createReportContent struct {
 	tokenSelect *widget.Select
 
 	form *widget.Form
 	app  interfaces.App
 }
 
-func NewCreationPage(parentApp interfaces.App) *createReportForm {
-	p := &createReportForm{app: parentApp}
+func NewCreateReport(parentApp interfaces.App) *createReportContent {
+	c := &createReportContent{app: parentApp}
 
-	p.tokenSelect = widget.NewSelect([]string{}, func(opt string) {})
-	p.tokenSelect.SetSelectedIndex(0)
+	c.tokenSelect = widget.NewSelect([]string{}, func(opt string) {})
+	c.tokenSelect.SetSelectedIndex(0)
 	tokenDelBtn := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
-		p.showDeleteTokenDialog()
+		c.showDeleteTokenDialog()
 	})
 	tokenDelBtn.Importance = widget.MediumImportance
-	selectField := container.NewBorder(nil, nil, nil, tokenDelBtn, p.tokenSelect)
+	selectField := container.NewBorder(nil, nil, nil, tokenDelBtn, c.tokenSelect)
 
 	toAddTokenBtn := widget.NewButtonWithIcon(
 		"Добавить ноый токен",
@@ -44,132 +44,132 @@ func NewCreationPage(parentApp interfaces.App) *createReportForm {
 	toAddTokenBtn.Importance = widget.LowImportance
 	toAddTokenBtn.Alignment = widget.ButtonAlignLeading
 
-	p.form = &widget.Form{
+	c.form = &widget.Form{
 		Items: []*widget.FormItem{
 			{Widget: widget.NewRichTextFromMarkdown("# Создать отчет")},
 			{Text: "Выбор Tinvest Токена", Widget: selectField},
 			// {Widget: container.NewBorder(nil, nil, toAddTokenBtn, nil)},
 			{Widget: container.NewStack(toAddTokenBtn)},
 		},
-		OnSubmit:   p.showCreatePortfolioDialog,
+		OnSubmit:   c.showCreatePortfolioDialog,
 		SubmitText: "Создать отчет",
 	}
 
-	return p
+	return c
 }
 
-func (p *createReportForm) Refresh() error {
-	p.form.Refresh()
+func (c *createReportContent) Refresh() error {
+	c.form.Refresh()
 
-	ctx := p.app.Ctx()
-	tokenSrv := p.app.Services().Token()
+	ctx := c.app.Ctx()
+	tokenSrv := c.app.Services().Token()
 	titles, err := tokenSrv.ListTokensTitles(ctx)
 	if err != nil {
 		return err
 	}
-	p.tokenSelect.SetOptions(titles)
-	p.tokenSelect.SetSelectedIndex(0)
+	c.tokenSelect.SetOptions(titles)
+	c.tokenSelect.SetSelectedIndex(0)
 
 	return nil
 }
 
-func (p *createReportForm) Content() fyne.CanvasObject {
-	return p.form
+func (c *createReportContent) Content() fyne.CanvasObject {
+	return c.form
 }
 
-func (p *createReportForm) showDeleteTokenDialog() {
+func (c *createReportContent) showDeleteTokenDialog() {
 	q, msg := "Удалить токен?", "Это действие необратимо."
-	p.app.ShowConfirm(q, msg, func(confirm bool) {
+	c.app.ShowConfirm(q, msg, func(confirm bool) {
 		if !confirm {
 			return
 		}
-		tokenSrv := p.app.Services().Token()
-		token := dto.NewTokenDTO(p.tokenSelect.Selected, "", "", "")
-		if err := tokenSrv.DeleteToken(p.app.Ctx(), token); err != nil {
-			p.app.ShowError(err)
+		tokenSrv := c.app.Services().Token()
+		token := dto.NewTokenDTO(c.tokenSelect.Selected, "", "", "")
+		if err := tokenSrv.DeleteToken(c.app.Ctx(), token); err != nil {
+			c.app.ShowError(err)
 		}
-		if err := p.app.Refresh(); err != nil {
-			p.app.ShowError(err)
+		if err := c.app.Refresh(); err != nil {
+			c.app.ShowError(err)
 		}
 	})
 }
 
-func (p *createReportForm) showCreatePortfolioDialog() {
-	tokenSrv := p.app.Services().Token()
+func (c *createReportContent) showCreatePortfolioDialog() {
+	tokenSrv := c.app.Services().Token()
 
-	title := p.tokenSelect.Selected
-	token, err := tokenSrv.GetTokenByTitle(p.app.Ctx(), title)
+	title := c.tokenSelect.Selected
+	token, err := tokenSrv.GetTokenByTitle(c.app.Ctx(), title)
 	if err != nil {
-		p.app.ShowError(err)
+		c.app.ShowError(err)
 		return
 	}
 
 	if token.Password == "" {
-		if !p.checkToken(token.Token) {
+		if !c.checkToken(token.Token) {
 			return
 		}
-		p.selectFolderAndReport(token.Token)
+		c.selectFolderAndReport(token.Token)
 		return
 	}
 
-	p.app.ShowPasswordEnter("Токен защищен паролем", func(pwd string) {
-		token, err = tokenSrv.GetTokenByTitleDecrypted(p.app.Ctx(), title, pwd)
+	c.app.ShowPasswordEnter("Токен защищен паролем", func(pwd string) {
+		token, err = tokenSrv.GetTokenByTitleDecrypted(c.app.Ctx(), title, pwd)
 		if err != nil {
 			if errors.Is(err, entity.ErrTokenIncorrectPassword) {
-				p.app.Logger().Infof("%s", err.Error())
-				p.app.ShowError(err)
+				c.app.Logger().Infof("%s", err.Error())
+				c.app.ShowError(err)
 				return
 			}
-			p.app.Logger().Errorf("%s", err.Error())
-			p.app.ShowError(err)
+			c.app.Logger().Errorf("%s", err.Error())
+			c.app.ShowError(err)
 			return
 		}
-		if !p.checkToken(token.Token) {
+		if !c.checkToken(token.Token) {
 			return
 		}
-		p.selectFolderAndReport(token.Token)
+		c.selectFolderAndReport(token.Token)
 	})
 }
 
-func (p *createReportForm) checkToken(token string) bool {
-	p.app.ProgressBarInfinite().Show()
-	defer p.app.ProgressBarInfinite().Hide()
+func (c *createReportContent) checkToken(token string) bool {
+	c.app.ProgressBarInfinite().Show()
+	defer c.app.ProgressBarInfinite().Hide()
 
-	srv := p.app.Services().Portfolio()
-	if err := srv.Ping(p.app.Ctx(), token); err != nil {
-		p.app.Logger().Errorf("%s", err.Error())
-		p.app.ShowError(err)
+	srv := c.app.Services().Portfolio()
+	if err := srv.Ping(c.app.Ctx(), token); err != nil {
+		c.app.Logger().Errorf("%s", err.Error())
+		c.app.ShowError(err)
 		return false
 	}
 	return true
 }
 
-func (p *createReportForm) selectFolderAndReport(token string) {
-	p.app.ShowFolderOpen(func(dest string, err error) {
-		p.app.ProgressBarInfinite().Show()
-		defer p.app.ProgressBarInfinite().Hide()
+func (c *createReportContent) selectFolderAndReport(token string) {
+	c.app.ShowFolderOpen(func(dest string, err error) {
+		c.app.ProgressBarInfinite().Show()
+		defer c.app.ProgressBarInfinite().Hide()
 
-		file, err := p.createReport(dest, token)
+		file, err := c.createReport(dest, token)
 		if err != nil {
-			p.app.Logger().Errorf("%s", err.Error())
-			p.app.ShowError(err)
+			c.app.Logger().Errorf("%s", err.Error())
+			c.app.ShowError(err)
 			return
 		}
 		msg := fmt.Sprintf("Файл отчета: %s", file)
-		p.app.Logger().Infof("created report file: %s", file)
-		p.app.ShowInfo("Готово", msg)
+		c.app.Logger().Infof("created report file: %s", file)
+		c.app.ShowInfo("Готово", msg)
 	})
 }
 
-func (p *createReportForm) createReport(dest string, token string) (string, error) {
-	portfolioSrv := p.app.Services().Portfolio()
+func (c *createReportContent) createReport(dest string, token string) (string, error) {
+	portfolioSrv := c.app.Services().Portfolio()
 	portfolioSrv.SetUseCache(true)
-	reportSrv := p.app.Services().Report()
+	reportSrv := c.app.Services().Report()
 
 	summaryCh := make(chan []*entity.PortfolioSummary)
 	errCh := make(chan error)
 
-	ctxWithTimeout, cancel := context.WithTimeout(p.app.Ctx(), 30*time.Second)
+	ctxWithTimeout, cancel := context.WithTimeout(c.app.Ctx(), 30*time.Second)
 	defer cancel()
 
 	go func() {
@@ -206,6 +206,6 @@ func (p *createReportForm) createReport(dest string, token string) (string, erro
 	}
 }
 
-func (p *createReportForm) clear() {
-	p.tokenSelect.SetSelectedIndex(0)
+func (c *createReportContent) clear() {
+	c.tokenSelect.SetSelectedIndex(0)
 }

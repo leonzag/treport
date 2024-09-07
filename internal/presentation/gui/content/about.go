@@ -12,7 +12,7 @@ import (
 	"github.com/leonzag/treport/internal/presentation/gui/interfaces"
 )
 
-var _ interfaces.Content = new(addTokenForm)
+var _ interfaces.Content = new(addTokenContent)
 
 type about struct {
 	tabs    *container.AppTabs
@@ -72,10 +72,10 @@ func NewAbout(parentApp interfaces.App) *about {
 	}
 }
 
-func (p *about) Content() fyne.CanvasObject {
-	return p.content
+func (c *about) Content() fyne.CanvasObject {
+	return c.content
 }
 
-func (p *about) Refresh() error {
+func (c *about) Refresh() error {
 	return nil
 }
