@@ -30,26 +30,24 @@ func NewCreateReport(parentApp interfaces.App) *createReportContent {
 
 	c.tokenSelect = widget.NewSelect([]string{}, func(opt string) {})
 	c.tokenSelect.SetSelectedIndex(0)
-	tokenDelBtn := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
-		c.showDeleteTokenDialog()
-	})
-	tokenDelBtn.Importance = widget.MediumImportance
-	selectField := container.NewBorder(nil, nil, nil, tokenDelBtn, c.tokenSelect)
-
-	toAddTokenBtn := widget.NewButtonWithIcon(
-		"Добавить ноый токен",
-		theme.ContentAddIcon(),
-		func() { parentApp.ShowAddToken() },
-	)
-	toAddTokenBtn.Importance = widget.LowImportance
-	toAddTokenBtn.Alignment = widget.ButtonAlignLeading
+	tokenDelBtn := &widget.Button{
+		Icon:       theme.DeleteIcon(),
+		Importance: widget.MediumImportance,
+		OnTapped:   c.showDeleteTokenDialog,
+	}
+	selectBox := container.NewBorder(nil, nil, nil, tokenDelBtn, c.tokenSelect)
 
 	c.form = &widget.Form{
 		Items: []*widget.FormItem{
 			{Widget: widget.NewRichTextFromMarkdown("# Создать отчет")},
-			{Text: "Выбор Tinvest Токена", Widget: selectField},
-			// {Widget: container.NewBorder(nil, nil, toAddTokenBtn, nil)},
-			{Widget: container.NewStack(toAddTokenBtn)},
+			{Text: "Выбор Tinvest Токена", Widget: selectBox},
+			{Widget: &widget.Button{
+				Text:       "Добавить ноый токен",
+				Icon:       theme.ContentAddIcon(),
+				Importance: widget.LowImportance,
+				Alignment:  widget.ButtonAlignLeading,
+				OnTapped:   parentApp.ShowAddToken,
+			}},
 		},
 		OnSubmit:   c.showCreatePortfolioDialog,
 		SubmitText: "Создать отчет",

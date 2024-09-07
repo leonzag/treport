@@ -1,6 +1,8 @@
 package content
 
 import (
+	"net/url"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -31,38 +33,47 @@ func NewAbout(parentApp interfaces.App) *about {
 	copyToClipboard := func(s string) {
 		parentApp.MainWindow().Clipboard().SetContent(s)
 	}
-
-	aboutBox := container.NewVBox(
-		widget.NewRichTextFromMarkdown(desc),
-		widget.NewRichTextFromMarkdown(license),
-	)
-
-	mail := widget.NewButtonWithIcon(gui.ContactMail, theme.ContentCopyIcon(), func() {
-		copyToClipboard(gui.ContactMail)
-		parentApp.OpenURL(gui.ContactMailURL())
-	})
-	mail.Importance = widget.LowImportance
-	mail.Alignment = widget.ButtonAlignLeading
-
-	repo := widget.NewButtonWithIcon("Открыть в браузере", theme.SearchIcon(), func() {
-		copyToClipboard(gui.ContactRepoURL().String())
-		parentApp.OpenURL(gui.ContactRepoURL())
-	})
-	repo.Importance = widget.LowImportance
-	repo.Alignment = widget.ButtonAlignLeading
-
-	contacts := container.New(
-		layout.NewFormLayout(),
-		widget.NewLabel("Почта"),
-		mail,
-		widget.NewLabel("Репозиторий"),
-		repo,
-	)
+	openURL := func(u *url.URL) {
+		parentApp.OpenURL(u)
+	}
 
 	return &about{
 		content: container.NewAppTabs(
-			container.NewTabItem("О программе", aboutBox),
-			container.NewTabItem("Контакты", contacts),
+
+			container.NewTabItem("О программе", container.NewVBox(
+				widget.NewRichTextFromMarkdown(desc),
+				widget.NewRichTextFromMarkdown(license),
+			)),
+
+			container.NewTabItem("Контакты", container.New(
+				layout.NewFormLayout(),
+
+				widget.NewLabel("Почта"),
+
+				&widget.Button{
+					Text:       gui.ContactMail,
+					Icon:       theme.ContentCopyIcon(),
+					Importance: widget.LowImportance,
+					Alignment:  widget.ButtonAlignLeading,
+					OnTapped: func() {
+						copyToClipboard(gui.ContactMail)
+						openURL(gui.ContactMailURL())
+					},
+				},
+
+				widget.NewLabel("Репозиторий"),
+
+				&widget.Button{
+					Text:       "Открыть в браузере",
+					Icon:       theme.SearchIcon(),
+					Importance: widget.LowImportance,
+					Alignment:  widget.ButtonAlignLeading,
+					OnTapped: func() {
+						copyToClipboard(gui.ContactRepoURL().String())
+						openURL(gui.ContactRepoURL())
+					},
+				},
+			)),
 		),
 	}
 }

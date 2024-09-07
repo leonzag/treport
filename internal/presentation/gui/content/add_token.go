@@ -61,12 +61,12 @@ func NewAddToken(parentApp interfaces.App) *addTokenContent {
 
 	tokenEntryFields := container.NewBorder(nil, nil, nil, getNewTokenBtn, c.tokenEntry)
 
-	c.selectExistingBtn = widget.NewButtonWithIcon(
-		"Выбрать существующий",
-		theme.SearchIcon(),
-		c.selectExistingClick,
-	)
-	c.selectExistingBtn.Importance = widget.LowImportance
+	c.selectExistingBtn = &widget.Button{
+		Text:       "Выбрать существующий",
+		Icon:       theme.SearchIcon(),
+		Importance: widget.LowImportance,
+		OnTapped:   c.selectExistingClick,
+	}
 
 	c.form = &widget.Form{
 		Items: []*widget.FormItem{
