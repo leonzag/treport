@@ -51,7 +51,7 @@ func NewAddToken(parentApp interfaces.App) *addTokenContent {
 
 	getNewTokenBtn := &widget.Button{
 		Text:       "Получить",
-		Icon:       theme.DownloadIcon(),
+		Icon:       theme.ContentAddIcon(),
 		Importance: widget.LowImportance,
 		Alignment:  widget.ButtonAlignTrailing,
 		OnTapped: func() {
