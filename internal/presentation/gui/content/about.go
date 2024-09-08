@@ -14,10 +14,9 @@ import (
 	"github.com/leonzag/treport/internal/presentation/gui/interfaces"
 )
 
-var _ interfaces.Content = new(addTokenContent)
+var _ interfaces.Content = new(about)
 
 type about struct {
-	tabs    *container.AppTabs
 	content fyne.CanvasObject
 }
 
