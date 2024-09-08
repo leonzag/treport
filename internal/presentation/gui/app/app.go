@@ -30,9 +30,11 @@ type application struct {
 	addToken            guiInterfaces.Content
 	creation            guiInterfaces.Content
 	about               guiInterfaces.Content
+	doc                 guiInterfaces.Content
 	progressBarInfinite guiInterfaces.ProgressBarInfinite
 
 	aboutWindow fyne.Window
+	docWindow   fyne.Window
 }
 
 func NewApp(ctx context.Context, l logger.Logger, services guiInterfaces.AppServices) *application {
@@ -206,18 +208,45 @@ func (a *application) ProgressBarInfinite() guiInterfaces.ProgressBarInfinite {
 }
 
 func (a *application) setMainMenu() {
+	helpItems := []*fyne.MenuItem{
+		{Label: "Документация", Action: a.showDoc},
+		{Label: "О прорамме", Action: a.showAbout},
+	}
+
 	mainMenu := fyne.NewMainMenu(
 		fyne.NewMenu("Файл", &fyne.MenuItem{
 			Label:  "Выход",
 			IsQuit: true,
 			Action: a.MainWindow().Close,
 		}),
-		fyne.NewMenu("Справка", &fyne.MenuItem{
-			Label:  "О прорамме",
-			Action: a.showAbout,
-		}),
+		fyne.NewMenu("Справка", helpItems...),
 	)
 	a.MainWindow().SetMainMenu(mainMenu)
+}
+
+func (a *application) showDoc() {
+	if a.docWindow == nil {
+		a.createDoc()
+	}
+	a.doc.Refresh()
+	a.docWindow.Show()
+	a.docWindow.CenterOnScreen()
+	a.docWindow.RequestFocus()
+}
+
+func (a *application) createDoc() {
+	docWindow := a.fyneApp.NewWindow("Документация")
+	if a.doc == nil {
+		a.doc = content.NewDoc(a)
+	}
+	docWindow.SetContent(a.doc.Content())
+	docWindow.SetFixedSize(true)
+	docWindow.SetOnClosed(func() {
+		a.mainWindow.Show()
+		docWindow.Close()
+		a.docWindow = nil
+	})
+	a.docWindow = docWindow
 }
 
 func (a *application) showAbout() {
