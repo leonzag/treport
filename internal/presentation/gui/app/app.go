@@ -225,8 +225,9 @@ func (a *application) showAbout() {
 		a.createAbout()
 	}
 	a.about.Refresh()
-	a.aboutWindow.CenterOnScreen()
 	a.aboutWindow.Show()
+	a.aboutWindow.CenterOnScreen()
+	a.aboutWindow.RequestFocus()
 }
 
 func (a *application) createAbout() {
