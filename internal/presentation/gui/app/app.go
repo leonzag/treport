@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/leonzag/treport/internal/presentation/gui"
 	"github.com/leonzag/treport/internal/presentation/gui/component"
+	"github.com/leonzag/treport/internal/presentation/gui/component/input"
 	"github.com/leonzag/treport/internal/presentation/gui/content"
 	guiInterfaces "github.com/leonzag/treport/internal/presentation/gui/interfaces"
 	"github.com/leonzag/treport/pkg/logger"
@@ -21,52 +22,33 @@ import (
 var _ guiInterfaces.App = new(application)
 
 type application struct {
-	fyneApp    fyne.App
-	mainWindow fyne.Window
-	logger     logger.Logger
-	services   guiInterfaces.AppServices
-	ctx        context.Context
+	fyneApp     fyne.App
+	mainWindow  fyne.Window
+	childWindow fyne.Window
+	mainMenu    *fyne.MainMenu
+	logger      logger.Logger
+	services    guiInterfaces.AppServices
+	ctx         context.Context
+	cancel      context.CancelFunc
 
 	addToken            guiInterfaces.Content
 	creation            guiInterfaces.Content
 	about               guiInterfaces.Content
 	doc                 guiInterfaces.Content
 	progressBarInfinite guiInterfaces.ProgressBarInfinite
-
-	aboutWindow fyne.Window
-	docWindow   fyne.Window
 }
 
 func NewApp(ctx context.Context, l logger.Logger, services guiInterfaces.AppServices) *application {
 	a := app.NewWithID(gui.AppID)
-
 	ctx, cancel := context.WithCancel(ctx)
-	mw := newMainWindow(a, func() {
-		l.Infof("Quit...")
-		cancel()
-		a.Quit()
-	})
 
-	guiApp := &application{
-		fyneApp:    a,
-		mainWindow: mw,
-		logger:     l,
-		ctx:        ctx,
-		services:   services,
+	return &application{
+		fyneApp:  a,
+		logger:   l,
+		services: services,
+		ctx:      ctx,
+		cancel:   cancel,
 	}
-	guiApp.setMainMenu()
-
-	return guiApp
-}
-
-func newMainWindow(a fyne.App, onClosed func()) fyne.Window {
-	w := a.NewWindow(gui.AppTitle)
-	w.SetMaster()
-	w.SetOnClosed(onClosed)
-	w.Resize(gui.WinSize())
-	w.SetFixedSize(gui.WinFixedSize)
-
-	return w
 }
 
 func (a *application) ShowAndRun() error {
@@ -85,36 +67,33 @@ func (a *application) Refresh() error {
 		return err
 	}
 
-	show := a.ShowCreateReport
-	if len(tokens) == 0 {
-		show = a.ShowAddToken
+	switch len(tokens) {
+	case 0:
+		a.ShowAddToken()
+	default:
+		a.ShowCreateReport()
 	}
-
-	if err := a.AddToken().Refresh(); err != nil {
-		return err
-	}
-	if err := a.CreateReport().Refresh(); err != nil {
-		return err
-	}
-	show()
 
 	return nil
 }
 
-func (a *application) ShowAddToken() {
-	a.AddToken().Refresh()
-	a.MainWindow().SetContent(container.NewVBox(
+func (a *application) setContent(c guiInterfaces.Content) {
+	c.Refresh()
+	scroll := container.NewScroll(container.NewVBox(
 		a.ProgressBarInfinite().Content(),
-		a.AddToken().Content(),
+		c.Content(),
 	))
+	winSize := a.MainWindow().Content().MinSize()
+	scroll.SetMinSize(winSize.SubtractWidthHeight(8, 8))
+	a.MainWindow().SetContent(scroll)
+}
+
+func (a *application) ShowAddToken() {
+	a.setContent(a.addTokenContent())
 }
 
 func (a *application) ShowCreateReport() {
-	a.CreateReport().Refresh()
-	a.MainWindow().SetContent(container.NewVBox(
-		a.ProgressBarInfinite().Content(),
-		a.CreateReport().Content(),
-	))
+	a.setContent(a.createReportContent())
 }
 
 func (a *application) ShowError(err error) {
@@ -160,10 +139,10 @@ func (a *application) ShowFolderOpen(callback func(string, error)) {
 }
 
 func (a *application) ShowPasswordEnter(title string, onSubmit func(pwd string)) {
-	component.ShowPasswordDialog(a.mainWindow, title, onSubmit)
+	input.ShowPasswordDialog(a.mainWindow, title, onSubmit)
 }
 
-func (a *application) AddToken() guiInterfaces.Content {
+func (a *application) addTokenContent() guiInterfaces.Content {
 	if a.addToken == nil {
 		a.addToken = content.NewAddToken(a)
 	}
@@ -171,7 +150,7 @@ func (a *application) AddToken() guiInterfaces.Content {
 	return a.addToken
 }
 
-func (a *application) CreateReport() guiInterfaces.Content {
+func (a *application) createReportContent() guiInterfaces.Content {
 	if a.creation == nil {
 		a.creation = content.NewCreateReport(a)
 	}
@@ -180,6 +159,15 @@ func (a *application) CreateReport() guiInterfaces.Content {
 }
 
 func (a *application) MainWindow() fyne.Window {
+	if a.mainWindow == nil {
+		a.mainWindow = a.fyneApp.NewWindow(gui.AppTitle)
+		a.mainWindow.SetMaster()
+		a.mainWindow.SetOnClosed(a.Quit)
+		a.mainWindow.SetMainMenu(a.MainMenu())
+		a.mainWindow.SetFixedSize(gui.WinFixedSize)
+		a.mainWindow.Resize(gui.WinSize())
+	}
+
 	return a.mainWindow
 }
 
@@ -207,69 +195,53 @@ func (a *application) ProgressBarInfinite() guiInterfaces.ProgressBarInfinite {
 	return a.progressBarInfinite
 }
 
-func (a *application) setMainMenu() {
+func (a *application) MainMenu() *fyne.MainMenu {
+	fileItems := []*fyne.MenuItem{
+		{Label: "Выход", IsQuit: true, Action: a.Quit},
+	}
 	helpItems := []*fyne.MenuItem{
 		{Label: "Документация", Action: a.showDoc},
 		{Label: "О прорамме", Action: a.showAbout},
 	}
 
-	mainMenu := fyne.NewMainMenu(
-		fyne.NewMenu("Файл", &fyne.MenuItem{
-			Label:  "Выход",
-			IsQuit: true,
-			Action: a.MainWindow().Close,
-		}),
+	return fyne.NewMainMenu(
+		fyne.NewMenu("Файл", fileItems...),
 		fyne.NewMenu("Справка", helpItems...),
 	)
-	a.MainWindow().SetMainMenu(mainMenu)
+}
+
+func (a *application) showWindow(title string, c guiInterfaces.Content) {
+	if a.childWindow != nil {
+		a.childWindow.Close()
+	}
+	a.childWindow = a.fyneApp.NewWindow(title)
+	a.childWindow.SetFixedSize(true)
+	a.childWindow.SetOnClosed(func() {
+		a.MainWindow().Show()
+		a.MainWindow().RequestFocus()
+		a.childWindow.Close()
+	})
+	c.Refresh()
+	a.childWindow.SetContent(c.Content())
+	a.childWindow.Show()
 }
 
 func (a *application) showDoc() {
-	if a.docWindow == nil {
-		a.createDoc()
-	}
-	a.doc.Refresh()
-	a.docWindow.Show()
-	a.docWindow.CenterOnScreen()
-	a.docWindow.RequestFocus()
-}
-
-func (a *application) createDoc() {
-	docWindow := a.fyneApp.NewWindow("Документация")
 	if a.doc == nil {
 		a.doc = content.NewDoc(a)
 	}
-	docWindow.SetContent(a.doc.Content())
-	docWindow.SetFixedSize(true)
-	docWindow.SetOnClosed(func() {
-		a.mainWindow.Show()
-		docWindow.Close()
-		a.docWindow = nil
-	})
-	a.docWindow = docWindow
+	a.showWindow("Документация", a.doc)
 }
 
 func (a *application) showAbout() {
-	if a.aboutWindow == nil {
-		a.createAbout()
-	}
-	a.about.Refresh()
-	a.aboutWindow.Show()
-	a.aboutWindow.CenterOnScreen()
-	a.aboutWindow.RequestFocus()
-}
-
-func (a *application) createAbout() {
-	about := a.fyneApp.NewWindow("О программе")
 	if a.about == nil {
 		a.about = content.NewAbout(a)
 	}
-	about.SetContent(a.about.Content())
-	about.SetFixedSize(true)
-	about.SetOnClosed(func() {
-		a.mainWindow.Show()
-		about.Close()
-		a.aboutWindow = nil
-	})
-	a.aboutWindow = about
+	a.showWindow("О программе", a.about)
+}
+
+func (a *application) Quit() {
+	a.Logger().Infof("Quit...")
+	a.cancel()
+	a.fyneApp.Quit()
 }
