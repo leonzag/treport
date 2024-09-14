@@ -3,10 +3,10 @@ package content
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/leonzag/treport/internal/application/dto"
-	"github.com/leonzag/treport/internal/presentation/gui"
+	"github.com/leonzag/treport/internal/presentation/gui/component/button"
+	"github.com/leonzag/treport/internal/presentation/gui/component/input"
 	"github.com/leonzag/treport/internal/presentation/gui/interfaces"
 	"github.com/leonzag/treport/internal/presentation/gui/validator"
 )
@@ -14,88 +14,73 @@ import (
 var _ interfaces.Content = new(addTokenContent)
 
 type addTokenContent struct {
-	titleEntry         *widget.Entry
-	tokenEntry         *widget.Entry
-	encryptionCheck    *widget.Check
-	encryptionPassword *widget.Entry
-	selectExistingBtn  *widget.Button
+	title             *widget.Entry
+	token             *input.EntryToken
+	password          *input.PasswordChecked
+	selectExistingBtn *widget.Button
 
-	form *widget.Form
-	app  interfaces.App
+	app     interfaces.App
+	form    *widget.Form
+	content fyne.CanvasObject
 }
 
 func NewAddToken(parentApp interfaces.App) *addTokenContent {
 	c := &addTokenContent{app: parentApp}
+	c.form = widget.NewForm()
 
-	c.titleEntry = widget.NewEntry()
-	c.titleEntry.Validator = validator.RequiredField
+	c.title = input.NewTitleEntry()
+	c.token = input.NewTokenEntry()
+	c.password = input.NewPasswordCheckedEntry()
+	c.selectExistingBtn = button.NewSelectExistingToken(c.app.ShowCreateReport)
 
-	c.tokenEntry = widget.NewEntry()
-	c.tokenEntry.Validator = validator.RequiredField
-	c.tokenEntry.SetPlaceHolder("вставьте ваш InvestAPI токен")
+	c.title.Validator = validator.RequiredField
+	c.token.Validator = validator.RequiredField
+	c.password.Validator = validator.NewPasswordDefaultValidator()
 
-	c.encryptionPassword = widget.NewPasswordEntry()
-	c.encryptionPassword.SetPlaceHolder("введите пароль")
-	c.encryptionPassword.Disable()
-	c.encryptionCheck = widget.NewCheck("", func(checked bool) {
-		switch {
-		case checked:
-			c.encryptionPassword.Enable()
-		case !checked:
-			c.encryptionPassword.SetText("")
-			c.encryptionPassword.Disable()
-		}
-	})
-
-	encryptionFields := container.NewBorder(nil, nil, c.encryptionCheck, nil, c.encryptionPassword)
-
-	getNewTokenBtn := &widget.Button{
-		Text:       "Получить",
-		Icon:       theme.ContentAddIcon(),
-		Importance: widget.LowImportance,
-		Alignment:  widget.ButtonAlignTrailing,
-		OnTapped: func() {
-			parentApp.OpenURL(gui.GetTokenURL())
-		},
+	c.title.OnChanged = func(input string) {
+		invalid := c.title.Validate() != nil
+		tokenInvalid := c.token.Validate() != nil
+		c.token.SetDisabled(invalid)
+		c.password.SetDisabled(invalid || tokenInvalid)
+		c.form.Refresh()
 	}
 
-	tokenEntryFields := container.NewBorder(nil, nil, nil, getNewTokenBtn, c.tokenEntry)
-
-	c.selectExistingBtn = &widget.Button{
-		Text:       "Выбрать существующий",
-		Icon:       theme.SearchIcon(),
-		Importance: widget.LowImportance,
-		OnTapped:   c.selectExistingClick,
+	c.token.OnChanged = func(input string) {
+		invalid := c.token.Validate() != nil
+		c.password.SetDisabled(invalid)
+		c.form.Refresh()
 	}
 
-	c.form = &widget.Form{
-		Items: []*widget.FormItem{
-			{Widget: widget.NewRichTextFromMarkdown("# Добавить токен")},
-			{Text: "Название", Widget: c.titleEntry},
-			{Text: "Токен", Widget: tokenEntryFields},
-			{Text: "Шифрование", Widget: encryptionFields},
-			{Widget: container.NewBorder(c.selectExistingBtn, nil, nil, nil)},
-		},
-		SubmitText: "Создать",
-		OnSubmit:   c.addTokenClick,
-	}
+	c.form.OnSubmit = c.addTokenClick
+	c.form.SubmitText = "Создать"
+
+	c.form.Append("Название", c.title)
+	c.form.Append("Токен", c.token)
+	c.form.Append("Шифрование", c.password)
+
+	c.token.Disable()
+	c.password.Disable()
+
+	c.content = container.NewVBox(
+		container.NewCenter(widget.NewRichTextFromMarkdown("# Добавить токен")),
+		container.NewPadded(c.form),
+		container.NewCenter(c.selectExistingBtn),
+	)
 
 	return c
 }
 
-func (c *addTokenContent) selectExistingClick() {
-	c.app.ShowCreateReport()
-}
-
 func (c *addTokenContent) addTokenClick() {
-	tokenDTO := dto.NewTokenDTO(
-		c.titleEntry.Text,
-		"",
-		c.encryptionPassword.Text,
-		c.tokenEntry.Text,
-	)
-	err := c.app.Services().Token().AddToken(c.app.Ctx(), tokenDTO)
-	if err != nil {
+	if c.title.Text == "" {
+		c.app.ShowError(c.form.Validate())
+		return
+	}
+	title, pwd := c.title.Text, c.password.Text
+	tokenDTO := dto.NewTokenDTO(title, "", pwd, c.token.Text)
+
+	tokenSrv := c.app.Services().Token()
+	ctx := c.app.Ctx()
+	if err := tokenSrv.AddToken(ctx, tokenDTO); err != nil {
 		c.app.ShowError(err)
 	} else if err := c.app.Refresh(); err != nil {
 		c.app.ShowError(err)
@@ -105,17 +90,19 @@ func (c *addTokenContent) addTokenClick() {
 }
 
 func (c *addTokenContent) Content() fyne.CanvasObject {
-	return c.form
+	return c.content
 }
 
 func (c *addTokenContent) Refresh() error {
 	service, ctx := c.app.Services(), c.app.Ctx()
 	tokens, err := service.Token().ListTokensTitles(ctx)
+
 	if err == nil && len(tokens) > 0 {
 		c.selectExistingBtn.Show()
 	} else {
 		c.selectExistingBtn.Hide()
 	}
+
 	c.clear()
 	c.form.Refresh()
 
@@ -123,15 +110,8 @@ func (c *addTokenContent) Refresh() error {
 }
 
 func (c *addTokenContent) clear() {
-	c.titleEntry.SetText("")
-	c.titleEntry.Refresh()
-
-	c.tokenEntry.SetText("")
-	c.tokenEntry.Refresh()
-
-	c.encryptionPassword.SetText("")
-	c.encryptionPassword.Refresh()
-
-	c.encryptionCheck.SetChecked(false)
-	c.encryptionCheck.Refresh()
+	c.title.SetText("")
+	c.title.Refresh()
+	c.token.Clear()
+	c.password.Clear()
 }
