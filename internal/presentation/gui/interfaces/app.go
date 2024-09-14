@@ -22,14 +22,11 @@ type App interface {
 	MainWindow() fyne.Window
 	ProgressBarInfinite() ProgressBarInfinite
 	Refresh() error
-
-	AddToken() Content
-	ShowAddToken()
-
-	CreateReport() Content
-	ShowCreateReport()
+	Quit()
 
 	OpenURL(*url.URL)
+	ShowAddToken()
+	ShowCreateReport()
 	ShowInfo(title, msg string)
 	ShowError(err error)
 	ShowConfirm(title, msg string, callback func(confirm bool))
