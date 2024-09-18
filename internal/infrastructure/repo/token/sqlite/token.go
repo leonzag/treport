@@ -6,15 +6,19 @@ import (
 	"errors"
 
 	"github.com/leonzag/treport/internal/domain/entity"
+	define "github.com/leonzag/treport/internal/infrastructure/repo"
 )
 
-func (r *tokenRepo) Add(ctx context.Context, token *entity.Token) error {
+// check interface impl.
+var _ define.TokenRepo = new(tokenRepo)
+
+func (r *tokenRepo) Add(ctx context.Context, token *entity.Token) (*entity.Token, error) {
 	r.Lock()
 	defer r.Unlock()
 
 	tx, err := r.db.BeginTx(ctx, txOpts)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -25,9 +29,13 @@ func (r *tokenRepo) Add(ctx context.Context, token *entity.Token) error {
 	`
 	_, err = tx.ExecContext(ctx, stmt, token.Title, token.Password, token.Token)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return r.Get(ctx, token.Title)
 }
 
 func (r *tokenRepo) Get(ctx context.Context, title string) (*entity.Token, error) {
@@ -52,6 +60,7 @@ func (r *tokenRepo) Get(ctx context.Context, title string) (*entity.Token, error
 	if err != nil {
 		return nil, err
 	}
+
 	return token, tx.Commit()
 }
 
@@ -89,13 +98,14 @@ func (r *tokenRepo) List(ctx context.Context) ([]*entity.Token, error) {
 	if rows.Err() != nil {
 		return tokens, rows.Err()
 	}
+
 	return tokens, tx.Commit()
 }
 
-func (r *tokenRepo) Update(ctx context.Context, token *entity.Token) error {
+func (r *tokenRepo) Update(ctx context.Context, token *entity.Token) (*entity.Token, error) {
 	tx, err := r.db.BeginTx(ctx, txOpts)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -110,9 +120,13 @@ func (r *tokenRepo) Update(ctx context.Context, token *entity.Token) error {
 	`
 	_, err = tx.ExecContext(ctx, q, token.Token, token.Password, token.Title)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return r.Get(ctx, token.Title)
 }
 
 func (r *tokenRepo) Delete(ctx context.Context, token *entity.Token) error {
@@ -135,5 +149,6 @@ func (r *tokenRepo) Delete(ctx context.Context, token *entity.Token) error {
 	if _, err = tx.ExecContext(ctx, q, token.Title); err != nil {
 		return err
 	}
+
 	return tx.Commit()
 }

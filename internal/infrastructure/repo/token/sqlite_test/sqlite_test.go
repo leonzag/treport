@@ -46,7 +46,7 @@ func TestSQLiteTokenRepo(t *testing.T) {
 		Password: "",
 		Token:    "someOpenToken",
 	}
-	err = repo.Add(ctx, &wantToken)
+	_, err = repo.Add(ctx, &wantToken)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +61,7 @@ func TestSQLiteTokenRepo(t *testing.T) {
 	}
 
 	t.Log("test <repo.Add> (2)")
-	err = repo.Add(ctx, &entity.Token{
+	_, err = repo.Add(ctx, &entity.Token{
 		Title:    "TestTokenTitle-2",
 		Password: "examplePassword",
 		Token:    "someEncryptedToken",
@@ -84,7 +84,7 @@ func TestSQLiteTokenRepo(t *testing.T) {
 	wantToken.Token = "someOpenTokenChanged"
 	wantToken.Password = "nowWithPassword"
 
-	err = repo.Update(ctx, &wantToken)
+	_, err = repo.Update(ctx, &wantToken)
 	if err != nil {
 		t.Fatal(err)
 	}

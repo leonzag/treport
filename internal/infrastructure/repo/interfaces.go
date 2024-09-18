@@ -11,9 +11,9 @@ type TokenRepo interface {
 	IsInited() bool
 	Close() error
 
-	Add(ctx context.Context, token *entity.Token) error
+	Add(ctx context.Context, token *entity.Token) (*entity.Token, error)
 	Get(ctx context.Context, name string) (*entity.Token, error)
 	List(ctx context.Context) ([]*entity.Token, error)
-	Update(ctx context.Context, token *entity.Token) error
+	Update(ctx context.Context, token *entity.Token) (*entity.Token, error)
 	Delete(ctx context.Context, token *entity.Token) error
 }

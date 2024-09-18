@@ -16,15 +16,15 @@ type CryptoService interface {
 }
 
 type TokenService interface {
-	AddToken(ctx context.Context, token dto.TokenDTO) error
+	AddToken(ctx context.Context, token dto.TokenRequestDTO) (*entity.Token, error)
 
-	GetTokenByTitle(ctx context.Context, title string) (dto.TokenDTO, error)
-	GetTokenByTitleDecrypted(ctx context.Context, title string, pwd string) (dto.TokenDTO, error)
-	ListTokens(ctx context.Context) ([]dto.TokenDTO, error)
+	GetTokenByTitle(ctx context.Context, title string) (*entity.Token, error)
+	DecryptToken(token *entity.Token, pwd string) (*entity.TokenDecrypted, error)
+	ListTokens(ctx context.Context) ([]*entity.Token, error)
 	ListTokensTitles(ctx context.Context) ([]string, error)
 
-	UpdateToken(ctx context.Context, token dto.TokenDTO) error
-	DeleteToken(ctx context.Context, token dto.TokenDTO) error
+	UpdateToken(ctx context.Context, token dto.TokenRequestDTO) (*entity.Token, error)
+	DeleteToken(ctx context.Context, token dto.TokenRequestDTO) error
 }
 
 type PortfolioService interface {
