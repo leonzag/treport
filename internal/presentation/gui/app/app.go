@@ -63,7 +63,7 @@ func (a *application) ShowAndRun() error {
 func (a *application) Refresh() error {
 	tokens, err := a.services.Token().ListTokens(a.ctx)
 	if err != nil {
-		a.Logger().Errorf("error on list tokens at sturtup: %s", err.Error())
+		a.Logger().Errorf("error on tokens list on app refresh: %s", err.Error())
 		return err
 	}
 
@@ -79,13 +79,11 @@ func (a *application) Refresh() error {
 
 func (a *application) setContent(c guiInterfaces.Content) {
 	c.Refresh()
-	scroll := container.NewScroll(container.NewVBox(
+	content := container.NewVBox(
 		a.ProgressBarInfinite().Content(),
 		c.Content(),
-	))
-	winSize := a.MainWindow().Content().MinSize()
-	scroll.SetMinSize(winSize.SubtractWidthHeight(8, 8))
-	a.MainWindow().SetContent(scroll)
+	)
+	a.MainWindow().SetContent(content)
 }
 
 func (a *application) ShowAddToken() {
