@@ -18,7 +18,7 @@ func HashPassword(pwd string) (string, error) {
 }
 
 func CheckPassword(hashed string, pwd string) bool {
-	if hashed == pwd {
+	if pwd == "" && hashed == pwd {
 		return true
 	}
 	err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(pwd))
