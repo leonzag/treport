@@ -5,3 +5,8 @@ type Token struct {
 	Password string
 	Token    string
 }
+
+type TokenDecrypted struct {
+	Title string
+	Token string
+}
