@@ -7,6 +7,13 @@ type TokenDTO struct {
 	Token       string
 }
 
+type TokenRequestDTO struct {
+	Title       string
+	Description string
+	Password    string
+	Token       string
+}
+
 func NewTokenDTO(title, desc, pwd, token string) TokenDTO {
 	return TokenDTO{
 		Title:       title,
