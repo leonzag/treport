@@ -1,6 +1,9 @@
 package content
 
 import (
+	"errors"
+	"fmt"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
@@ -71,22 +74,31 @@ func NewAddToken(parentApp interfaces.App) *addTokenContent {
 }
 
 func (c *addTokenContent) addTokenClick() {
-	if c.title.Text == "" {
-		c.app.ShowError(c.form.Validate())
+	title, pwd := c.title.Text, c.password.Text
+	if title == "" {
+		c.app.ShowError(errors.Join(
+			fmt.Errorf("Некоторые необходимые поля не заполнены."),
+			c.form.Validate(),
+		))
 		return
 	}
-	title, pwd := c.title.Text, c.password.Text
-	tokenDTO := dto.NewTokenDTO(title, "", pwd, c.token.Text)
-
-	tokenSrv := c.app.Services().Token()
-	ctx := c.app.Ctx()
-	if err := tokenSrv.AddToken(ctx, tokenDTO); err != nil {
-		c.app.ShowError(err)
-	} else if err := c.app.Refresh(); err != nil {
-		c.app.ShowError(err)
-	} else {
-		c.app.ShowCreateReport()
+	tokenDTO := dto.TokenRequestDTO{
+		Title:    title,
+		Password: pwd,
+		Token:    c.token.Text,
 	}
+
+	srv := c.app.Services().Token()
+	ctx := c.app.Ctx()
+	if _, err := srv.AddToken(ctx, tokenDTO); err != nil {
+		c.app.ShowError(err)
+		return
+	}
+	if err := c.app.Refresh(); err != nil {
+		c.app.ShowError(err)
+		return
+	}
+	c.app.ShowCreateReport()
 }
 
 func (c *addTokenContent) Content() fyne.CanvasObject {

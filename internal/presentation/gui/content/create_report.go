@@ -81,12 +81,16 @@ func (c *createReportContent) showDeleteTokenDialog() {
 		if !confirm {
 			return
 		}
+		tokenName := c.tokenSelect.Selected
+
 		tokenSrv := c.app.Services().Token()
-		token := dto.NewTokenDTO(c.tokenSelect.Selected, "", "", "")
+		token := dto.TokenRequestDTO{Title: c.tokenSelect.Selected}
 		if err := tokenSrv.DeleteToken(c.app.Ctx(), token); err != nil {
+			c.app.Logger().Errorf("failed delete token '%s': %s", tokenName, err.Error())
 			c.app.ShowError(err)
 		}
 		if err := c.app.Refresh(); err != nil {
+			c.app.Logger().Errorf("failed refresh app after delete token: '%s'", err.Error())
 			c.app.ShowError(err)
 		}
 	})
@@ -111,14 +115,13 @@ func (c *createReportContent) showCreatePortfolioDialog() {
 	}
 
 	c.app.ShowPasswordEnter("Токен защищен паролем", func(pwd string) {
-		token, err = tokenSrv.GetTokenByTitleDecrypted(c.app.Ctx(), title, pwd)
-		if err != nil {
-			if errors.Is(err, entity.ErrTokenIncorrectPassword) {
-				c.app.Logger().Infof("%s", err.Error())
-				c.app.ShowError(err)
-				return
-			}
+		token, err := tokenSrv.DecryptToken(token, pwd)
+		if errors.Is(err, entity.ErrTokenIncorrectPassword) {
+			c.app.Logger().Infof("%s", err.Error())
+		} else if err != nil {
 			c.app.Logger().Errorf("%s", err.Error())
+		}
+		if err != nil {
 			c.app.ShowError(err)
 			return
 		}
