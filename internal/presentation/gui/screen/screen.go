@@ -11,7 +11,6 @@ type Screen interface {
 }
 
 type AppHandlers interface {
-	ShowError(err error)
 	ToScreenCreateReport()
 	ToScreenAddToken()
 	ToClipboard(text string)
