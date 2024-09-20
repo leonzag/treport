@@ -1,18 +1,33 @@
-package interfaces
+package app
 
 import (
 	"context"
 
 	"github.com/leonzag/treport/internal/application/dto"
 	"github.com/leonzag/treport/internal/domain/entity"
-	"github.com/leonzag/treport/internal/domain/enum"
+	"github.com/leonzag/treport/pkg/logger"
 )
 
-type CryptoService interface {
-	HashPassword(pwd string) (string, error)
-	CheckPassword(hashed string, pwd string) bool
-	EncryptToken(pwd string, token string) (string, error)
-	DecryptToken(pwd string, encryptedToken string) (string, error)
+type AppServices interface {
+	Token() TokenService
+	Portfolio() PortfolioService
+	Report() PortfolioReportService
+}
+
+type App interface {
+	Ctx() context.Context
+	Services() AppServices
+	Logger() logger.Logger
+
+	ShowAndRun() error
+	Refresh() error
+	Quit()
+
+	AddToken(token dto.TokenRequestDTO)
+	DeleteToken(token dto.TokenRequestDTO)
+	CreateReport(token dto.TokenRequestDTO)
+	ToScreenAddToken()
+	ToScreenCreateReport()
 }
 
 type TokenService interface {
@@ -37,17 +52,4 @@ type PortfolioService interface {
 
 type PortfolioReportService interface {
 	CreateXLSX(fpath string, portfolios []*entity.PortfolioSummary) (string, error)
-}
-
-type TinvestAPI interface {
-	ClientConnection(ctx context.Context, token string) error
-	ClientStop() error
-	Ping(ctx context.Context, token string) error
-	Accounts(ctx context.Context, status enum.AccountStatus) ([]*entity.Account, error)
-	Instrument(ctx context.Context, uid string) (*entity.Instrument, error)
-	Portfolio(ctx context.Context, accId string, crc enum.Currency) (*entity.Portfolio, error)
-	ActiveConnection() bool
-	SetUseCache(use bool)
-	UseCache() bool
-	Token() string
 }

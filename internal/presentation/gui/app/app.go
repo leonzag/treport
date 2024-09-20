@@ -2,164 +2,280 @@ package app
 
 import (
 	"context"
-	"net/url"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
+	"github.com/leonzag/treport/internal/domain/entity"
 	"github.com/leonzag/treport/internal/presentation/gui"
 	"github.com/leonzag/treport/internal/presentation/gui/component"
-	"github.com/leonzag/treport/internal/presentation/gui/content"
-	guiInterfaces "github.com/leonzag/treport/internal/presentation/gui/interfaces"
+	"github.com/leonzag/treport/internal/presentation/gui/component/input"
+	"github.com/leonzag/treport/internal/presentation/gui/screen"
 	"github.com/leonzag/treport/pkg/logger"
 )
 
 // check interface impl.
-var _ guiInterfaces.App = new(application)
+var _ App = new(application)
 
 type application struct {
-	fyneApp    fyne.App
-	mainWindow fyne.Window
-	logger     logger.Logger
-	services   guiInterfaces.AppServices
-	ctx        context.Context
+	fyneApp     fyne.App
+	win         fyne.Window
+	childWindow fyne.Window
+	menu        *fyne.MainMenu
+	logger      logger.Logger
+	services    AppServices
+	ctx         context.Context
+	cancel      context.CancelFunc
 
-	addTokenPage        guiInterfaces.Content
-	creationPage        guiInterfaces.Content
-	progressBarInfinite guiInterfaces.ProgressBarInfinite
+	addToken *screen.AddTokenScreen
+	creation *screen.CreateReportScreen
+	about    *screen.AboutScreen
+	doc      *screen.DocScreen
+	progress *component.ProgressBarInfinite
+
+	tokens          map[string]*entity.Token
+	activeScreen    fyne.CanvasObject
+	screenContainer *fyne.Container
 }
 
-func NewApp(ctx context.Context, l logger.Logger, services guiInterfaces.AppServices) *application {
-	fyneApp := app.NewWithID(gui.AppID)
+func NewApp(ctx context.Context, l logger.Logger, services AppServices) *application {
+	a := app.NewWithID(gui.AppID)
+	ctx, cancel := context.WithCancel(ctx)
 
-	mainWindow := fyneApp.NewWindow(gui.AppTitle)
-	mainWindow.Resize(fyne.Size{
-		Width:  gui.WinWidth,
-		Height: gui.WinHeight,
-	})
-	mainWindow.SetFixedSize(gui.WinFixedSize)
-
-	guiApp := &application{
-		fyneApp:    fyneApp,
-		mainWindow: mainWindow,
-		logger:     l,
-		services:   services,
-		ctx:        ctx,
+	return &application{
+		fyneApp:  a,
+		logger:   l,
+		services: services,
+		ctx:      ctx,
+		cancel:   cancel,
+		tokens:   make(map[string]*entity.Token),
 	}
-	guiApp.addTokenPage = content.NewAddTokenPage(guiApp)
-	guiApp.creationPage = content.NewCreationPage(guiApp)
-
-	guiApp.progressBarInfinite = component.NewProgressBarInfinite()
-
-	return guiApp
-}
-
-func (a *application) ShowAndRun() error {
-	var err error
-	if err = a.Refresh(); err != nil {
-		dlg := dialog.NewError(err, a.mainWindow)
-		dlg.SetOnClosed(a.mainWindow.Close)
-		dlg.Show()
-	}
-	a.mainWindow.ShowAndRun()
-	return err
-}
-
-func (a *application) Refresh() error {
-	showWindow := a.ShowCreateReport
-	tokens, err := a.services.Token().ListTokens(a.ctx)
-	if err != nil {
-		return err
-	}
-	if len(tokens) == 0 {
-		showWindow = a.ShowAddToken
-	}
-	if err := a.addTokenPage.Refresh(); err != nil {
-		return err
-	}
-	if err := a.creationPage.Refresh(); err != nil {
-		return err
-	}
-	showWindow()
-
-	return nil
-}
-
-func (a *application) ShowAddToken() {
-	a.addTokenPage.Refresh()
-	content := container.NewVBox(
-		a.progressBarInfinite.Content(),
-		a.addTokenPage.Content(),
-	)
-	a.mainWindow.SetContent(content)
-}
-
-func (a *application) ShowCreateReport() {
-	a.creationPage.Refresh()
-	content := container.NewVBox(
-		a.progressBarInfinite.Content(),
-		a.creationPage.Content(),
-	)
-	a.mainWindow.SetContent(content)
-}
-
-func (a *application) ShowError(err error) {
-	dialog.ShowError(err, a.mainWindow)
-}
-
-func (a *application) ShowInfo(title, msg string) {
-	dialog.ShowInformation(title, msg, a.mainWindow)
-}
-
-func (a *application) ShowConfirm(title, msg string, callback func(bool)) {
-	dialog.ShowConfirm(title, msg, callback, a.mainWindow)
-}
-
-func (a *application) ShowFolderOpen(callback func(string, error)) {
-	dlg := dialog.NewFolderOpen(func(uri fyne.ListableURI, err error) {
-		if uri == nil {
-			return
-		}
-		callback(uri.Path(), err)
-	}, a.mainWindow)
-	dlg.SetConfirmText("Выбрать папку")
-	dlg.SetDismissText("Закрыть")
-	dlg.Show()
-}
-
-func (a *application) ShowPasswordEnter(title string, onSubmit func(pwd string)) {
-	component.ShowPasswordDialog(a.mainWindow, title, onSubmit)
-}
-
-func (a *application) AddTokenForm() guiInterfaces.Content {
-	return a.addTokenPage
-}
-
-func (a *application) CreateReportForm() guiInterfaces.Content {
-	return a.creationPage
-}
-
-func (a *application) MainWindow() fyne.Window {
-	return a.mainWindow
-}
-
-func (a *application) OpenURL(url *url.URL) {
-	a.fyneApp.OpenURL(url)
-}
-
-func (a *application) Logger() logger.Logger {
-	return a.logger
-}
-
-func (a *application) Services() guiInterfaces.AppServices {
-	return a.services
 }
 
 func (a *application) Ctx() context.Context {
 	return a.ctx
 }
 
-func (a *application) ProgressBarInfinite() guiInterfaces.ProgressBarInfinite {
-	return a.progressBarInfinite
+func (a *application) Services() AppServices {
+	return a.services
+}
+
+func (a *application) Logger() logger.Logger {
+	return a.logger
+}
+
+func (a *application) ShowAndRun() error {
+	var err error
+	if err = a.Refresh(); err != nil {
+		a.showFatal(err)
+	}
+	a.mainWindow().ShowAndRun()
+	return err
+}
+
+func (a *application) Refresh() error {
+	if err := a.loadTokens(); err != nil {
+		return err
+	}
+	a.screenCreateReport().SetTokens(a.tokens)
+	a.screenAddToken().SetTokens(a.tokens)
+
+	switch len(a.tokens) {
+	case 0:
+		a.showScreenAddToken()
+	default:
+		a.showScreenCreateReport()
+	}
+
+	return nil
+}
+
+func (a *application) Quit() {
+	a.Logger().Infof("Quit...")
+	a.cancel()
+	a.fyneApp.Quit()
+}
+
+func (a *application) mainWindow() fyne.Window {
+	if a.win == nil {
+		a.win = a.fyneApp.NewWindow(gui.AppTitle)
+		a.win.SetMaster()
+		a.win.SetOnClosed(a.Quit)
+		a.win.SetMainMenu(a.mainMenu())
+		a.win.SetFixedSize(gui.WinFixedSize)
+		a.win.Resize(gui.WinSize())
+	}
+
+	return a.win
+}
+
+func (a *application) mainMenu() *fyne.MainMenu {
+	if a.menu != nil {
+		return a.menu
+	}
+
+	fileItems := []*fyne.MenuItem{
+		{Label: "Выход", IsQuit: true, Action: a.Quit},
+	}
+	helpItems := []*fyne.MenuItem{
+		{Label: "Документация", Action: a.showDoc},
+		{Label: "О прорамме", Action: a.showAbout},
+	}
+	a.menu = fyne.NewMainMenu(
+		fyne.NewMenu("Файл", fileItems...),
+		fyne.NewMenu("Справка", helpItems...),
+	)
+
+	return a.menu
+}
+
+func (a *application) screenAddToken() *screen.AddTokenScreen {
+	if a.addToken == nil {
+		a.addToken = screen.NewAddToken(a)
+	}
+
+	return a.addToken
+}
+
+func (a *application) screenCreateReport() *screen.CreateReportScreen {
+	if a.creation == nil {
+		a.creation = screen.NewCreateReport(a)
+	}
+
+	return a.creation
+}
+
+func (a *application) progressBar() *component.ProgressBarInfinite {
+	if a.progress == nil {
+		a.progress = component.NewProgressBarInfinite()
+	}
+
+	return a.progress
+}
+
+func (a *application) loadTokens() error {
+	tokens, err := a.services.Token().ListTokens(a.ctx)
+	if err != nil {
+		a.Logger().Errorf("error on tokens list on app refresh: %s", err.Error())
+		return err
+	}
+
+	a.tokens = make(map[string]*entity.Token, len(tokens))
+	for _, token := range tokens {
+		a.tokens[token.Title] = token
+	}
+
+	return nil
+}
+
+func (a *application) setScreen(s screen.Screen) {
+	if a.screenContainer == nil {
+		a.screenContainer = container.NewPadded()
+	}
+	if a.activeScreen == nil {
+		a.activeScreen = container.NewVBox(
+			a.progressBar(),
+			a.screenContainer,
+		)
+	}
+	a.screenContainer.Objects = []fyne.CanvasObject{s.Content()}
+	a.activeScreen.Refresh()
+	a.mainWindow().SetContent(a.activeScreen)
+}
+
+func (a *application) showWindow(title string, s screen.Screen) {
+	if a.childWindow != nil {
+		a.childWindow.Close()
+	}
+	a.childWindow = a.fyneApp.NewWindow(title)
+	a.childWindow.SetFixedSize(true)
+	a.childWindow.SetOnClosed(func() {
+		a.mainWindow().Show()
+		a.mainWindow().RequestFocus()
+		a.childWindow.Close()
+	})
+	s.Refresh()
+	a.childWindow.SetContent(s.Content())
+	a.childWindow.Show()
+}
+
+func (a *application) showDoc() {
+	if a.doc == nil {
+		a.doc = screen.NewDoc(a)
+	}
+	a.showWindow("Документация", a.doc)
+}
+
+func (a *application) showAbout() {
+	if a.about == nil {
+		a.about = screen.NewAbout(a)
+	}
+	a.showWindow("О программе", a.about)
+}
+
+func (a *application) showScreenAddToken() {
+	a.setScreen(a.screenAddToken())
+}
+
+func (a *application) showScreenCreateReport() {
+	a.setScreen(a.screenCreateReport())
+}
+
+func (a *application) showInfo(title, msg string) {
+	dialog.ShowInformation(title, msg, a.win)
+}
+
+func (a *application) showConfirm(title, msg string, callback func(bool)) {
+	dlg := dialog.NewConfirm(title, msg, callback, a.win)
+	dlg.SetConfirmText("Подтвердить")
+	dlg.SetDismissText("Отмена")
+	dlg.Show()
+}
+
+func (a *application) showFolderOpen(callback func(string, error)) {
+	dlg := dialog.NewFolderOpen(func(uri fyne.ListableURI, err error) {
+		if uri == nil {
+			return
+		}
+		callback(uri.Path(), err)
+	}, a.win)
+	dlg.SetConfirmText("Выбрать папку")
+	dlg.SetDismissText("Закрыть")
+	dlg.Show()
+}
+
+func (a *application) showPasswordEnter(title string, onSubmit func(pwd string)) {
+	input.ShowPasswordDialog(a.win, title, onSubmit)
+}
+
+func (a *application) showError(err error) {
+	dialog.ShowError(err, a.win)
+}
+
+func (a *application) showFatal(err error) {
+	w := a.mainWindow()
+	w.SetTitle("Критическая Ошибка")
+	w.SetIcon(theme.ErrorIcon())
+	w.SetContent(container.NewBorder(
+		widget.NewLabel(err.Error()),
+		&widget.Button{
+			Text:       "Выход",
+			Icon:       theme.CancelIcon(),
+			Importance: widget.DangerImportance,
+			OnTapped:   w.Close,
+		},
+		nil,
+		nil,
+	))
+	w.Show()
+}
+
+func (a *application) withProgress(process func()) {
+	a.progressBar().Show()
+	defer a.progressBar().Hide()
+
+	process()
 }

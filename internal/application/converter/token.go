@@ -13,6 +13,14 @@ func ToTokenFromDTO(token dto.TokenDTO) *entity.Token {
 	}
 }
 
+func ToTokenFromRequestDTO(token dto.TokenRequestDTO) *entity.Token {
+	return &entity.Token{
+		Title:    token.Title,
+		Password: token.Password,
+		Token:    token.Token,
+	}
+}
+
 func ToTokenDTOFromService(token *entity.Token) dto.TokenDTO {
 	return dto.TokenDTO{
 		Title:    token.Title,

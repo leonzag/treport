@@ -1,19 +1,17 @@
 package app
 
-import "github.com/leonzag/treport/internal/presentation/gui/interfaces"
-
 type appServices struct {
-	token     interfaces.TokenService
-	portfolio interfaces.PortfolioService
-	report    interfaces.PortfolioReportService
+	token     TokenService
+	portfolio PortfolioService
+	report    PortfolioReportService
 }
 
-var _ interfaces.AppServices = new(appServices)
+var _ AppServices = new(appServices)
 
 func NewAppServices(
-	token interfaces.TokenService,
-	portfolio interfaces.PortfolioService,
-	report interfaces.PortfolioReportService,
+	token TokenService,
+	portfolio PortfolioService,
+	report PortfolioReportService,
 ) *appServices {
 	return &appServices{
 		token:     token,
@@ -22,14 +20,14 @@ func NewAppServices(
 	}
 }
 
-func (s *appServices) Token() interfaces.TokenService {
+func (s *appServices) Token() TokenService {
 	return s.token
 }
 
-func (s *appServices) Portfolio() interfaces.PortfolioService {
+func (s *appServices) Portfolio() PortfolioService {
 	return s.portfolio
 }
 
-func (s *appServices) Report() interfaces.PortfolioReportService {
+func (s *appServices) Report() PortfolioReportService {
 	return s.report
 }

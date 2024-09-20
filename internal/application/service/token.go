@@ -26,94 +26,70 @@ func NewTokenService(
 	}
 }
 
-func (s *tokenService) encryptAndHash(t dto.TokenDTO) (dto.TokenDTO, error) {
-	if t.Password == "" {
-		return t, nil
+func (s *tokenService) AddToken(ctx context.Context, t dto.TokenRequestDTO) (*entity.Token, error) {
+	_, err := s.tokenRepo.Get(ctx, t.Title)
+	if err == nil {
+		return nil, entity.ErrTokenExist
 	}
-	encToken, err := s.cryptoService.EncryptToken(t.Password, t.Token)
-	if err != nil {
-		return t, err
-	}
-	hashedPwd, err := s.cryptoService.HashPassword(t.Password)
-	if err != nil {
-		return t, err
-	}
-	t.Password = hashedPwd
-	t.Token = encToken
-	return t, nil
-}
-
-func (s *tokenService) decryptAndUnhash(t dto.TokenDTO, pwd string) (dto.TokenDTO, error) {
-	if !s.cryptoService.CheckPassword(t.Password, pwd) {
-		return t, entity.ErrTokenIncorrectPassword
-	}
-	if t.Password == "" {
-		return t, nil
-	}
-	var err error
-	t.Token, err = s.cryptoService.DecryptToken(pwd, t.Token)
-	if err != nil {
-		return t, err
-	}
-	t.Password = pwd
-	return t, nil
-}
-
-func (s *tokenService) AddToken(ctx context.Context, tokenDTO dto.TokenDTO) error {
-	tokenDTO, err := s.encryptAndHash(tokenDTO)
-	if err != nil {
-		return err
-	}
-	token := converter.ToTokenFromDTO(tokenDTO)
-	return s.tokenRepo.Add(ctx, token)
-}
-
-func (s *tokenService) DeleteToken(ctx context.Context, tokenDTO dto.TokenDTO) error {
-	token := converter.ToTokenFromDTO(tokenDTO)
-	return s.tokenRepo.Delete(ctx, token)
-}
-
-func (s *tokenService) UpdateToken(ctx context.Context, tokenDTO dto.TokenDTO) error {
-	tokenDTO, err := s.encryptAndHash(tokenDTO)
-	if err != nil {
-		return err
-	}
-	token := converter.ToTokenFromDTO(tokenDTO)
-	return s.tokenRepo.Update(ctx, token)
-}
-
-func (s *tokenService) GetTokenByTitle(ctx context.Context, title string) (dto.TokenDTO, error) {
-	token, error := s.tokenRepo.Get(ctx, title)
-	if error != nil {
-		return dto.TokenDTO{}, error
-	}
-
-	return converter.ToTokenDTOFromService(token), nil
-}
-
-func (s *tokenService) GetTokenByTitleDecrypted(ctx context.Context, title string, pwd string) (dto.TokenDTO, error) {
-	token, err := s.GetTokenByTitle(ctx, title)
-	if err != nil {
-		return dto.TokenDTO{}, err
-	}
-	token, err = s.decryptAndUnhash(token, pwd)
-	if err != nil {
-		return dto.TokenDTO{}, err
-	}
-	return token, nil
-}
-
-func (s *tokenService) ListTokens(ctx context.Context) ([]dto.TokenDTO, error) {
-	tokens, err := s.tokenRepo.List(ctx)
+	tokenEnc, err := s.encryptAndHash(t)
 	if err != nil {
 		return nil, err
 	}
-	tokenDTOs := make([]dto.TokenDTO, 0, len(tokens))
-	for _, token := range tokens {
-		tokenDTOs = append(tokenDTOs, converter.ToTokenDTOFromService(token))
+	token := converter.ToTokenFromDTO(tokenEnc)
+
+	return s.tokenRepo.Add(ctx, token)
+}
+
+func (s *tokenService) DecryptToken(t *entity.Token, pwd string) (*entity.TokenDecrypted, error) {
+	if !s.cryptoService.CheckPassword(t.Password, pwd) {
+		return nil, entity.ErrTokenIncorrectPassword
 	}
 
-	return tokenDTOs, nil
+	var err error
+	token := &entity.TokenDecrypted{Title: t.Title}
+
+	if t.Password == "" {
+		token.Token = t.Token
+		return token, nil
+	}
+	token.Token, err = s.cryptoService.DecryptToken(pwd, t.Token)
+
+	return token, err
+}
+
+func (s *tokenService) DeleteToken(ctx context.Context, tokenDTO dto.TokenRequestDTO) error {
+	if _, err := s.GetTokenByTitle(ctx, tokenDTO.Token); err == nil {
+		return entity.ErrTokenNotFound
+	}
+	token := converter.ToTokenFromRequestDTO(tokenDTO)
+
+	return s.tokenRepo.Delete(ctx, token)
+}
+
+func (s *tokenService) UpdateToken(ctx context.Context, t dto.TokenRequestDTO) (*entity.Token, error) {
+	if _, err := s.GetTokenByTitle(ctx, t.Token); err == nil {
+		return nil, entity.ErrTokenNotFound
+	}
+	tokenEnc, err := s.encryptAndHash(t)
+	if err != nil {
+		return nil, err
+	}
+	token := converter.ToTokenFromDTO(tokenEnc)
+
+	return s.tokenRepo.Update(ctx, token)
+}
+
+func (s *tokenService) GetTokenByTitle(ctx context.Context, title string) (*entity.Token, error) {
+	token, err := s.tokenRepo.Get(ctx, title)
+	if err != nil {
+		return nil, entity.ErrTokenNotFound
+	}
+
+	return token, nil
+}
+
+func (s *tokenService) ListTokens(ctx context.Context) ([]*entity.Token, error) {
+	return s.tokenRepo.List(ctx)
 }
 
 func (s *tokenService) ListTokensTitles(ctx context.Context) ([]string, error) {
@@ -127,4 +103,28 @@ func (s *tokenService) ListTokensTitles(ctx context.Context) ([]string, error) {
 	}
 
 	return titles, nil
+}
+
+func (s *tokenService) encryptAndHash(t dto.TokenRequestDTO) (dto.TokenDTO, error) {
+	token := dto.TokenDTO{
+		Title:       t.Title,
+		Description: t.Description,
+		Token:       t.Token,
+	}
+	if t.Password == "" {
+		return token, nil
+	}
+
+	var err error
+
+	token.Token, err = s.cryptoService.EncryptToken(t.Password, t.Token)
+	if err != nil {
+		return token, err
+	}
+	token.Password, err = s.cryptoService.HashPassword(t.Password)
+	if err != nil {
+		return token, err
+	}
+
+	return token, nil
 }

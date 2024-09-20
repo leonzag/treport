@@ -46,6 +46,34 @@ func (p *Portfolio) SortPositionsByTypes(types ...enum.InstrumentType) {
 	}
 }
 
+type PositionsSorting []enum.InstrumentType
+
+// NewPositionsSorting порядок сортировки позиций в портфеле по их типу.
+//
+// Если order == nil будет возвращать базовый порядок.
+func NewPositionsSorting(order []enum.InstrumentType) PositionsSorting {
+	if len(order) == 0 {
+		return NewPositionsSoringDefault()
+	}
+	return order
+}
+
+func NewPositionsSoringDefault() PositionsSorting {
+	return []enum.InstrumentType{
+		enum.InstrumentType_SHARE,
+		enum.InstrumentType_BOND,
+		enum.InstrumentType_FUTURES,
+		enum.InstrumentType_OPTION,
+		enum.InstrumentType_ETF,
+		enum.InstrumentType_INDEX,
+		enum.InstrumentType_SP,
+		enum.InstrumentType_CURRENCY,
+		enum.InstrumentType_CLEARING_CERTIFICATE,
+		enum.InstrumentType_COMMODITY,
+		enum.InstrumentType_UNSPECIFIED,
+	}
+}
+
 type PortfolioPosition struct {
 	Quantity             *value.Quotation
 	AveragePositionPrice *value.MoneyValue
