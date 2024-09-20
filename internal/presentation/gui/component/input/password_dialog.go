@@ -17,7 +17,7 @@ func ShowPasswordDialog(w fyne.Window, title string, onSubmit func(pwd string)) 
 	entry.Validator = validator.RequiredField
 
 	form := []*widget.FormItem{{Widget: entry}}
-	dialog.ShowForm(title, "Ok", "Abort", form, func(confirm bool) {
+	dialog.ShowForm(title, "Ок", "Отмена", form, func(confirm bool) {
 		if !confirm {
 			return
 		}
