@@ -19,6 +19,7 @@ type App interface {
 	Services() AppServices
 	Logger() logger.Logger
 
+	ShowAndRun() error
 	Refresh() error
 	Quit()
 
