@@ -2,6 +2,7 @@ package gui
 
 import (
 	"net/url"
+	"time"
 
 	"fyne.io/fyne/v2"
 )
@@ -11,9 +12,10 @@ const (
 	AppTitle    = "T-Invest: Портфельный Отчет"
 	ContactMail = "leonzag997@gmail.com"
 
-	WinWidth     = 720
-	WinHeight    = 480
-	WinFixedSize = true
+	WinWidth      = 720
+	WinHeight     = 480
+	WinFixedSize  = true
+	TimeLimitLong = 30 * time.Second
 )
 
 func WinSize() fyne.Size {
