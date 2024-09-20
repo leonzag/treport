@@ -9,8 +9,7 @@ import (
 	appService "github.com/leonzag/treport/internal/application/service"
 	tokenRepo "github.com/leonzag/treport/internal/infrastructure/repo/token"
 	"github.com/leonzag/treport/internal/infrastructure/service/tinvest"
-	guiApp "github.com/leonzag/treport/internal/presentation/gui/app"
-	guiInterface "github.com/leonzag/treport/internal/presentation/gui/interfaces"
+	"github.com/leonzag/treport/internal/presentation/gui/app"
 	"github.com/leonzag/treport/pkg/database/sqlite"
 	"github.com/leonzag/treport/pkg/logger"
 	"github.com/leonzag/treport/pkg/logger/zerolog"
@@ -28,7 +27,7 @@ type appGuiDeps struct {
 	portfolioService       appInterface.PortfolioService
 	portfolioReportService appInterface.PortfolioReportService
 
-	appServices guiInterface.AppServices
+	appServices app.AppServices
 }
 
 type AppGui interface {
@@ -47,7 +46,7 @@ func NewAppGUI() (AppGui, error) {
 	if err != nil {
 		return nil, err
 	}
-	app := guiApp.NewApp(ctx, logger, services)
+	app := app.NewApp(ctx, logger, services)
 
 	return app, nil
 }
@@ -176,7 +175,7 @@ func (a *appGuiDeps) PortfolioService() (appInterface.PortfolioService, error) {
 	return a.portfolioService, nil
 }
 
-func (a *appGuiDeps) AppServices() (guiInterface.AppServices, error) {
+func (a *appGuiDeps) AppServices() (app.AppServices, error) {
 	if a.appServices != nil {
 		return a.appServices, nil
 	}
@@ -193,7 +192,7 @@ func (a *appGuiDeps) AppServices() (guiInterface.AppServices, error) {
 	if err != nil {
 		return nil, err
 	}
-	a.appServices = guiApp.NewAppServices(token, portfolio, report)
+	a.appServices = app.NewAppServices(token, portfolio, report)
 
 	return a.appServices, nil
 }
