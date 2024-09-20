@@ -6,11 +6,11 @@ require (
 	fyne.io/fyne/v2 v2.5.1
 	github.com/mattn/go-sqlite3 v1.14.23
 	github.com/rs/zerolog v1.33.0
-	github.com/russianinvestments/invest-api-go-sdk v1.24.0
+	github.com/russianinvestments/invest-api-go-sdk v1.24.1
 	github.com/xuri/excelize/v2 v2.8.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.27.0
-	google.golang.org/grpc v1.66.2
+	google.golang.org/grpc v1.67.0
 )
 
 require (
@@ -42,6 +42,7 @@ require (
 	github.com/richardlehane/msoleps v1.0.4 // indirect
 	github.com/rymdport/portal v0.2.6 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
+	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
