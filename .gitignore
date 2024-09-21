@@ -2,3 +2,4 @@
 /build/
 .idea/
 __debug*
+fyne-cross/
