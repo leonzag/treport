@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   sodipodi:docname="ico.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showguides="false"
+     inkscape:zoom="1"
+     inkscape:cx="415"
+     inkscape:cy="208"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <sodipodi:guide
+       position="50.911688,586.24621"
+       orientation="0,-1"
+       id="guide15"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <linearGradient
+       id="swatch54">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop54" />
+    </linearGradient>
+    <linearGradient
+       id="swatch52"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#bdae93;stop-opacity:0.70753741;"
+         offset="0"
+         id="stop53" />
+    </linearGradient>
+    <linearGradient
+       id="swatch44"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop44" />
+    </linearGradient>
+    <linearGradient
+       id="swatch43"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#d65d0e;stop-opacity:1;"
+         offset="0"
+         id="stop43" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient38"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#282828;stop-opacity:1;"
+         offset="0.69984847"
+         id="stop38" />
+      <stop
+         style="stop-color:#504945;stop-opacity:0;"
+         offset="0.87002999"
+         id="stop39" />
+    </linearGradient>
+    <linearGradient
+       id="swatch17"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop17" />
+    </linearGradient>
+    <linearGradient
+       id="swatch16"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#df9122;stop-opacity:1;"
+         offset="0"
+         id="stop16" />
+    </linearGradient>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="583.26365 : 241.33306 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="59.794161 : 229.8619 : 1"
+       inkscape:persp3d-origin="256 : 170.66667 : 1"
+       id="perspective4" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient38"
+       id="radialGradient39"
+       cx="258.34766"
+       cy="257.9668"
+       fx="258.34766"
+       fy="257.9668"
+       r="303.44531"
+       gradientTransform="matrix(1.0000962,0,0,0.95256955,-0.42191505,8.0884703)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#swatch43"
+       id="linearGradient43"
+       x1="44.722656"
+       y1="246.82422"
+       x2="502.19531"
+       y2="246.82422"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-16.828125,3.546875)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#swatch44"
+       id="linearGradient44"
+       x1="44.722656"
+       y1="246.82422"
+       x2="502.19531"
+       y2="246.82422"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-16.828125,3.546875)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#swatch17"
+       id="linearGradient46"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.53887746,0,0,0.53887744,-17.715204,170.44661)"
+       x1="124.9975"
+       y1="158.87187"
+       x2="905.47797"
+       y2="158.87187" />
+  </defs>
+  <g
+     inkscape:label="Слой 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:url(#linearGradient43);fill-opacity:1;stroke:url(#linearGradient44);stroke-width:4.27991;stroke-linecap:square;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path42"
+       sodipodi:type="arc"
+       sodipodi:cx="256.63086"
+       sodipodi:cy="250.37109"
+       sodipodi:rx="228.73633"
+       sodipodi:ry="216.16406"
+       sodipodi:start="0"
+       sodipodi:end="6.2781252"
+       sodipodi:arc-type="arc"
+       d="M 485.36719,250.37109 A 228.73633,216.16406 0 0 1 256.92022,466.53498 228.73633,216.16406 0 0 1 27.895263,250.918 228.73633,216.16406 0 0 1 255.76279,34.208588 228.73633,216.16406 0 0 1 485.36426,249.27729"
+       sodipodi:open="true"
+       sodipodi:insensitive="true" />
+    <ellipse
+       style="display:inline;fill:url(#radialGradient39);fill-opacity:1;stroke:none;stroke-width:5.20961;stroke-linecap:square;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path35"
+       ry="289.05276"
+       rx="303.47449"
+       cy="253.81979"
+       cx="257.95059"
+       inkscape:transform-center-x="-16.148434"
+       inkscape:transform-center-y="5.4049216"
+       transform="matrix(0.99990382,-0.01386932,0,1,0,0)"
+       sodipodi:insensitive="true" />
+    <text
+       xml:space="preserve"
+       style="font-size:103.464px;font-family:'JetBrainsMono Nerd Font Mono';-inkscape-font-specification:'JetBrainsMono Nerd Font Mono, Normal';fill:#df9122;fill-opacity:1;stroke:url(#linearGradient46);stroke-width:2.15551;stroke-linecap:square;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       x="43.952587"
+       y="284.51184"
+       id="text15"
+       transform="scale(0.99894721,1.0010539)"><tspan
+         id="tspan15"
+         x="43.952587"
+         y="284.51184"
+         style="fill:#df9122;fill-opacity:1;stroke:url(#linearGradient46);stroke-width:2.15551;stroke-linecap:square;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+         sodipodi:role="line">TReport</tspan></text>
+  </g>
+</svg>
