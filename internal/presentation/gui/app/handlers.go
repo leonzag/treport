@@ -1,8 +1,10 @@
 package app
 
 import (
+	"context"
 	"fmt"
 
+	"fyne.io/fyne/v2"
 	"github.com/skratchdot/open-golang/open"
 
 	"github.com/leonzag/treport/internal/application/dto"
@@ -96,26 +98,88 @@ func (a *application) CreateReport(tokenDTO dto.TokenRequestDTO) {
 		a.showError(err)
 		return
 	}
-	a.selectFolderAndReport(decrypted.Token)
-}
 
-func (a *application) selectFolderAndReport(token string) {
-	a.showFolderOpen(func(dest string, err error) {
-		var file string
-		a.withProgress(func() {
-			file, err = a.reportProcess(dest, token, gui.TimeLimitLong)
-		})
-		if err != nil {
+	type folderOpen struct {
+		err  error
+		path string
+	}
+
+	folderCh := make(chan folderOpen)
+	a.showFolderOpen(func(uri fyne.ListableURI, err error) {
+		var path string
+		if uri != nil {
+			path = uri.Path()
+		}
+		folderCh <- folderOpen{err: err, path: path}
+	})
+
+	go func() {
+		folder, ok := <-folderCh
+		switch {
+		case !ok:
+			return
+		case folder.err != nil:
 			a.Logger().Errorf("%s", err.Error())
 			a.showError(err)
 			return
+		case folder.path == "":
+			return
 		}
-		a.Logger().Infof("created report file: %s", file)
-		a.showInfo("Готово", fmt.Sprintf("Файл отчета: %s", file))
-		if err := open.Start(file); err != nil {
-			a.Logger().Errorf("failed to open file with default application: %s", file)
+		a.Logger().Infof("selected folder:\n%s", folder.path)
+		a.report(folder.path, decrypted.Token)
+	}()
+}
+
+func (a *application) report(folder string, token string) {
+	var err error
+	var file string
+
+	portfolioSrv := a.Services().Portfolio()
+	portfolioSrv.SetUseCache(true)
+	reportSrv := a.Services().Report()
+	sorting := entity.NewPositionsSoringDefault()
+
+	a.withProgress(func() {
+		type summaryRes struct {
+			err     error
+			summary []*entity.PortfolioSummary
+		}
+
+		summaryResCh := make(chan summaryRes)
+		ctx, cancel := context.WithTimeout(a.Ctx(), gui.TimeLimitLong)
+		defer cancel()
+
+		go func() {
+			summary, err := portfolioSrv.SummaryAll(ctx, token)
+			summaryResCh <- summaryRes{err: err, summary: summary}
+		}()
+
+		select {
+		case <-ctx.Done():
+			err = fmt.Errorf("Не удалось сделать отчет. Медленное соединение.")
+		case res := <-summaryResCh:
+			if res.err != nil {
+				err = res.err
+			}
+			for _, s := range res.summary {
+				s.Portfolio.SortPositionsByTypes(sorting...)
+			}
+			file, err = reportSrv.CreateXLSX(folder, res.summary)
 		}
 	})
+
+	if err != nil {
+		a.Logger().Errorf("%s", err.Error())
+		a.showError(err)
+		return
+	}
+
+	a.Logger().Infof("created report:\n%s", file)
+	a.showInfo("Готово", fmt.Sprintf("Файл отчета: %s", file))
+
+	if err := open.Start(file); err != nil {
+		a.Logger().Errorf("failed to open file with default application: %s", file)
+	}
 }
 
 func (a *application) checkToken(token string) error {
