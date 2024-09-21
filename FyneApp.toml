@@ -1,0 +1,14 @@
+Website = "https://github.com/leonzag/treport"
+
+[Details]
+  Icon = "assets/Icon.png"
+  Name = "TReport"
+  ID = "com.leonzag.treport"
+  Version = "0.1.0"
+  Build = 1
+
+[LinuxAndBSD]
+  GenericName = "TReport Tinkoff"
+  Categories = ["Network", "Office", "Utility", "Science"]
+  Comment = "Creation of financial reports on the T-Invest platform"
+  Keywords = ["tinkoff", "bank", "invest", "finance", "report", "money"]

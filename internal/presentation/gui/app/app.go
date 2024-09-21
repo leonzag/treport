@@ -235,13 +235,8 @@ func (a *application) showConfirm(title, msg string, callback func(bool)) {
 	dlg.Show()
 }
 
-func (a *application) showFolderOpen(callback func(string, error)) {
-	dlg := dialog.NewFolderOpen(func(uri fyne.ListableURI, err error) {
-		if uri == nil {
-			return
-		}
-		callback(uri.Path(), err)
-	}, a.win)
+func (a *application) showFolderOpen(callback func(fyne.ListableURI, error)) {
+	dlg := dialog.NewFolderOpen(callback, a.win)
 	dlg.SetConfirmText("Выбрать папку")
 	dlg.SetDismissText("Закрыть")
 	dlg.Show()
