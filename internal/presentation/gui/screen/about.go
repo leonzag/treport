@@ -37,7 +37,7 @@ func NewAbout(appHandlers AppHandlers) *AboutScreen {
 				widget.NewRichTextFromMarkdown(fmt.Sprintf(
 					"## Версия \n%s-**%s**",
 					config.AppName,
-					gui.Version,
+					fyne.CurrentApp().Metadata().Version,
 				)),
 				widget.NewRichTextFromMarkdown(license),
 			)),
