@@ -4,7 +4,7 @@ Website = "https://github.com/leonzag/treport"
   Icon = "assets/Icon.png"
   Name = "TReport"
   ID = "com.leonzag.treport"
-  Version = "0.1.0"
+  Version = "0.1.1"
   Build = 1
 
 [LinuxAndBSD]
