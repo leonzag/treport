@@ -2,7 +2,7 @@
 
 ## Описание
 
-[![Github All Releases](https://img.shields.io/github/downloads/leonzag/treprt/total.svg?style=flat)](/github/v/release/leonzag/treport)
+![GitHub Release](https://img.shields.io/github/v/release/leonzag/treport?include_prereleases&display_name=release)
 
 Программа с графическим интерфейсом для создания отчетов
 по вашим инвестиционным портфелям на платформе **T-Invest**.
