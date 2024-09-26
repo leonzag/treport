@@ -195,10 +195,10 @@ func newTotalValuePositive() *excelize.Style {
 
 func newFullBorders() []excelize.Border {
 	return []excelize.Border{
-		{Type: "left", Style: 2},
-		{Type: "right", Style: 2},
-		{Type: "top", Style: 2},
-		{Type: "bottom", Style: 2},
+		{Type: "left", Style: 1, Color: "#000000"},
+		{Type: "right", Style: 1, Color: "#000000"},
+		{Type: "top", Style: 1, Color: "#000000"},
+		{Type: "bottom", Style: 1, Color: "#000000"},
 	}
 }
 

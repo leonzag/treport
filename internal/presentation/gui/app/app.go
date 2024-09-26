@@ -187,17 +187,17 @@ func (a *application) setScreen(s screen.Screen) {
 }
 
 func (a *application) showWindow(title string, s screen.Screen) {
-	if a.childWindow != nil {
-		a.childWindow.Close()
+	if a.childWindow == nil {
+		a.childWindow = a.fyneApp.NewWindow(title)
+		a.childWindow.SetFixedSize(true)
+		a.childWindow.SetCloseIntercept(func() {
+			a.mainWindow().Show()
+			a.mainWindow().RequestFocus()
+			a.childWindow.Hide()
+		})
 	}
-	a.childWindow = a.fyneApp.NewWindow(title)
-	a.childWindow.SetFixedSize(true)
-	a.childWindow.SetOnClosed(func() {
-		a.mainWindow().Show()
-		a.mainWindow().RequestFocus()
-		a.childWindow.Close()
-	})
 	s.Refresh()
+	a.childWindow.SetTitle(title)
 	a.childWindow.SetContent(s.Content())
 	a.childWindow.Show()
 }
