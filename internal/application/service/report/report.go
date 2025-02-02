@@ -63,7 +63,10 @@ func (c *PortfolioReportCtl) newSummarySheet(p *entity.PortfolioSummary) error {
 	c.sheet = p.Account.Name
 	titles := summaryTitles()
 	leftCell := "A1"
-	rightCell, _ := excelize.CoordinatesToCellName(len(titles), 1)
+	rightCell, err := excelize.CoordinatesToCellName(len(titles), 1)
+	if err != nil {
+		return err
+	}
 
 	if _, err := c.file.NewSheet(c.sheet); err != nil {
 		return err
@@ -76,10 +79,16 @@ func (c *PortfolioReportCtl) newSummarySheet(p *entity.PortfolioSummary) error {
 	c.file.SetCellStyle(c.sheet, leftCell, rightCell, c.styles.accName)
 
 	leftCell = "A2"
-	rightCell, _ = excelize.CoordinatesToCellName(len(titles), 2)
+	rightCell, err = excelize.CoordinatesToCellName(len(titles), 2)
+	if err != nil {
+		return err
+	}
 
 	for i, title := range titles {
-		cell, _ := excelize.CoordinatesToCellName(i+1, 2)
+		cell, err := excelize.CoordinatesToCellName(i+1, 2)
+		if err != nil {
+			return err
+		}
 		if err := c.file.SetCellStr(c.sheet, cell, title); err != nil {
 			return err
 		}
@@ -89,7 +98,10 @@ func (c *PortfolioReportCtl) newSummarySheet(p *entity.PortfolioSummary) error {
 	row := 3
 	cells := make([]string, len(p.Portfolio.Positions))
 	for i := range cells {
-		cells[i], _ = excelize.CoordinatesToCellName(1, row+i)
+		cells[i], err = excelize.CoordinatesToCellName(1, row+i)
+		if err != nil {
+			return err
+		}
 	}
 
 	for i, cell := range cells {
@@ -106,10 +118,22 @@ func (c *PortfolioReportCtl) newSummarySheet(p *entity.PortfolioSummary) error {
 	}
 	row = row + len(cells) + 1
 
-	yieldLabelCell, _ := excelize.JoinCellName("A", row)
-	yieldValueCell, _ := excelize.JoinCellName("B", row)
-	totalLabelCell, _ := excelize.JoinCellName("A", row+1)
-	totalValueCell, _ := excelize.JoinCellName("B", row+1)
+	yieldLabelCell, err := excelize.JoinCellName("A", row)
+	if err != nil {
+		return err
+	}
+	yieldValueCell, err := excelize.JoinCellName("B", row)
+	if err != nil {
+		return err
+	}
+	totalLabelCell, err := excelize.JoinCellName("A", row+1)
+	if err != nil {
+		return err
+	}
+	totalValueCell, err := excelize.JoinCellName("B", row+1)
+	if err != nil {
+		return err
+	}
 
 	c.file.SetCellStr(c.sheet, yieldLabelCell, "Текущая доходность портфеля, %:")
 	c.file.SetCellFloat(c.sheet, yieldValueCell, p.Portfolio.ExpectedYield.ToFloat(), 2, 64)
@@ -159,12 +183,24 @@ func (s *PortfolioReportCtl) appendInstrumentPosition(
 		return err
 	}
 
-	col, row, _ := excelize.CellNameToCoordinates(cell)
-	rightCell, _ := excelize.CoordinatesToCellName(col+14, row)
+	col, row, err := excelize.CellNameToCoordinates(cell)
+	if err != nil {
+		return err
+	}
+	rightCell, err := excelize.CoordinatesToCellName(col+14, row)
+	if err != nil {
+		return err
+	}
 	s.file.SetCellStyle(s.sheet, cell, rightCell, s.styles.general)
 
-	crcCellLeft, _ := excelize.CoordinatesToCellName(col+5, row)
-	crcCellRight, _ := excelize.CoordinatesToCellName(col+10, row)
+	crcCellLeft, err := excelize.CoordinatesToCellName(col+5, row)
+	if err != nil {
+		return err
+	}
+	crcCellRight, err := excelize.CoordinatesToCellName(col+10, row)
+	if err != nil {
+		return err
+	}
 	s.file.SetCellStyle(s.sheet, cell, cell, s.styles.instrName)
 	s.file.SetCellStyle(s.sheet, crcCellLeft, crcCellRight, s.styles.currencyGeneral)
 
