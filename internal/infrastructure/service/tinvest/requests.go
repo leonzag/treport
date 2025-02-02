@@ -10,7 +10,7 @@ func (c *tinvestService) accounts(status enum.AccountStatus) ([]*entity.Account,
 	st := c.mapper.Account.StatusToRequest(status)
 	resp, err := srv.GetAccounts(&st)
 	if err != nil {
-		return nil, err
+		return nil, ParseError(err)
 	}
 
 	accs := make([]*entity.Account, 0, len(resp.Accounts))
@@ -31,7 +31,7 @@ func (c *tinvestService) instrument(uid string) (*entity.Instrument, error) {
 	instr := c.conn.NewInstrumentsServiceClient()
 	resp, err := instr.InstrumentByUid(uid)
 	if err != nil {
-		return nil, err
+		return nil, ParseError(err)
 	}
 
 	i := c.mapper.Instrument.InstrumentToDomain(resp.Instrument)
@@ -65,7 +65,7 @@ func (c *tinvestService) portfolio(accId string, crc enum.Currency) (*entity.Por
 
 	resp, err := ops.GetPortfolio(accId, crcReq)
 	if err != nil {
-		return nil, err
+		return nil, ParseError(err)
 	}
 
 	return c.mapper.Portfolio.ResponseToDomain(resp), nil
