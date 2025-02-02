@@ -7,32 +7,26 @@ type (
 )
 
 const (
-	_ AccountStatus = iota
-
-	AccountStatusUNSPECIFIED // Статус счёта не определён.
-	AccountStatusNEW         // Новый, в процессе открытия.
-	AccountStatusOPEN        // Открытый и активный счёт.
-	AccountStatusCLOSED      // Закрытый счёт.
-	AccountStatusALL         // Все счета.
+	AccountStatusUNSPECIFIED AccountStatus = iota // Статус счёта не определён.
+	AccountStatusNEW                              // Новый, в процессе открытия.
+	AccountStatusOPEN                             // Открытый и активный счёт.
+	AccountStatusCLOSED                           // Закрытый счёт.
+	AccountStatusALL                              // Все счета.
 )
 
 const (
-	_ AccountType = iota
-
-	AccountTypeUNSPECIFIED // Тип аккаунта не определён.
-	AccountTypeTINKOFF     // Брокерский счёт Т-Инвестиций.
-	AccountTypeTINKOFF_IIS // ИИС.
-	AccountTypeINVEST_BOX  // Инвесткопилка.
-	AccountTypeINVEST_FUND // Фонд денежного рынка.
+	AccountTypeUNSPECIFIED AccountType = iota // Тип аккаунта не определён.
+	AccountTypeTINKOFF                        // Брокерский счёт Т-Инвестиций.
+	AccountTypeTINKOFF_IIS                    // ИИС.
+	AccountTypeINVEST_BOX                     // Инвесткопилка.
+	AccountTypeINVEST_FUND                    // Фонд денежного рынка.
 )
 
 const (
-	_ AccessLevel = iota
-
-	AccessLevelUNSPECIFIED // Уровень доступа не определён.
-	AccessLevelFULLACCESS  // Полный доступ к счёту.
-	AccessLevelREADONLY    // Доступ с уровнем прав «только чтение».
-	AccessLevelNOACCESS    // Доступа нет.
+	AccessLevelUNSPECIFIED AccessLevel = iota // Уровень доступа не определён.
+	AccessLevelFULLACCESS                     // Полный доступ к счёту.
+	AccessLevelREADONLY                       // Доступ с уровнем прав «только чтение».
+	AccessLevelNOACCESS                       // Доступа нет.
 )
 
 func (s AccountStatus) String() string {
@@ -42,7 +36,7 @@ func (s AccountStatus) String() string {
 		"ACCOUNT_STATUS_OPEN",
 		"ACCOUNT_STATUS_CLOSED",
 		"ACCOUNT_STATUS_ALL",
-	}[s-1]
+	}[s]
 }
 
 func (s AccountType) String() string {
@@ -52,7 +46,7 @@ func (s AccountType) String() string {
 		"ACCOUNT_TYPE_TINKOFF_IIS",
 		"ACCOUNT_TYPE_INVEST_BOX",
 		"ACCOUNT_TYPE_INVEST_FUND",
-	}[s-1]
+	}[s]
 }
 
 func (s AccessLevel) String() string {
@@ -61,5 +55,5 @@ func (s AccessLevel) String() string {
 		"ACCOUNT_ACCESS_LEVEL_FULL_ACCESS",
 		"ACCOUNT_ACCESS_LEVEL_READ_ONLY",
 		"ACCOUNT_ACCESS_LEVEL_NO_ACCESS",
-	}[s-1]
+	}[s]
 }
