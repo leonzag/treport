@@ -3,9 +3,7 @@ package enum
 type Currency int32
 
 const (
-	_ Currency = iota
-
-	CurrencyRUB
+	CurrencyRUB Currency = iota
 	CurrencyUSD
 	CurrencyEUR
 )
@@ -15,5 +13,5 @@ func (c Currency) String() string {
 		"RUB",
 		"USD",
 		"EUR",
-	}[c-1]
+	}[c]
 }

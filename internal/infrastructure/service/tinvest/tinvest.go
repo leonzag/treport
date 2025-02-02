@@ -2,6 +2,7 @@ package tinvest
 
 import (
 	"context"
+	"errors"
 
 	"github.com/leonzag/treport/internal/domain/entity"
 	"github.com/leonzag/treport/internal/domain/enum"
@@ -118,7 +119,12 @@ func (s *tinvestService) Instrument(ctx context.Context, uid string) (*entity.In
 		defer s.ClientStop()
 	}
 
-	return s.instrument(uid)
+	i, err := s.instrument(uid)
+	if errors.Is(err, ErrNotFound) {
+		return nil, entity.ErrInstrumentNotFound
+	}
+
+	return i, err
 }
 
 func (s *tinvestService) Accounts(ctx context.Context, status enum.AccountStatus) ([]*entity.Account, error) {

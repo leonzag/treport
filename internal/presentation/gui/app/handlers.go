@@ -160,11 +160,12 @@ func (a *application) report(folder string, token string) {
 		case res := <-summaryResCh:
 			if res.err != nil {
 				err = res.err
+			} else {
+				for _, s := range res.summary {
+					s.Portfolio.SortPositionsByTypes(sorting...)
+				}
+				file, err = reportSrv.CreateXLSX(folder, res.summary)
 			}
-			for _, s := range res.summary {
-				s.Portfolio.SortPositionsByTypes(sorting...)
-			}
-			file, err = reportSrv.CreateXLSX(folder, res.summary)
 		}
 	})
 
