@@ -101,9 +101,19 @@ func (s *portfolioService) summary(ctx context.Context, acc *entity.Account) (*e
 		go func() {
 			defer wg.Done()
 			instrument, err := s.instrument(ctx, position.InstrumentUid)
-			if err != nil {
+			switch {
+			case errors.Is(err, entity.ErrInstrumentNotFound):
+				instruments[i] = &entity.Instrument{
+					Name:           "!UNDEFINED",
+					Figi:           position.Figi,
+					InstrumentType: position.InstrumentType,
+					BlockedTcaFlag: position.Blocked,
+					Uid:            position.InstrumentUid,
+					PositionUid:    position.PositionUid,
+				}
+			case err != nil:
 				errs = errors.Join(errs, err)
-			} else {
+			default:
 				instruments[i] = instrument
 			}
 		}()
