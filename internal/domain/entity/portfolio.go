@@ -34,9 +34,7 @@ func (p *Portfolio) SortPositionsByType(t enum.InstrumentType) {
 			unsorted = append(unsorted, pos)
 		}
 	}
-	for _, pos := range unsorted {
-		sorted = append(sorted, pos)
-	}
+	sorted = append(sorted, unsorted...)
 	p.Positions = sorted
 }
 
